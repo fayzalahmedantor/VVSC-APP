@@ -1,0 +1,145 @@
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;">
+    
+    <!-- Row 1: Summary Cards -->
+    <div style="grid-column: span 8; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <!-- Latest Uploads / Main Summary (from image) -->
+        <div class="card summary-card gradient-blue" style="grid-column: span 2; padding: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h3 style="margin-bottom:8px; font-size:24px;">What's your plan?</h3>
+                    <p style="color:rgba(255,255,255,0.8); margin-bottom: 24px;">Looks like a productive day.</p>
+                    <div style="font-size:32px; font-weight:700;">৳12,450</div>
+                    <div style="font-size:14px; opacity:0.8;">আজকের বিক্রয়</div>
+                </div>
+                <button class="icon-btn" style="background:white; color:var(--primary);"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+
+        <!-- Single Metric Card -->
+        <div class="card summary-card pink" style="grid-column: span 1;">
+            <div class="icon-wrapper"><i class="fas fa-box"></i></div>
+            <div class="summary-value">248</div>
+            <div class="summary-label">মোট পণ্য</div>
+        </div>
+
+        <!-- Another Metric -->
+        <div class="card summary-card teal" style="grid-column: span 1;">
+            <div class="icon-wrapper"><i class="fas fa-users"></i></div>
+            <div class="summary-value">1,284</div>
+            <div class="summary-label">মোট গ্রাহক</div>
+        </div>
+
+        <div class="card summary-card purple" style="grid-column: span 1;">
+            <div class="icon-wrapper"><i class="fas fa-chart-line"></i></div>
+            <div class="summary-value">৳8,230</div>
+            <div class="summary-label">নিট লাভ</div>
+        </div>
+
+        <div class="card summary-card gradient-pink" style="grid-column: span 1;">
+            <div class="icon-wrapper" style="background:rgba(255,255,255,0.2);"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="summary-value">৳3,600</div>
+            <div class="summary-label">বকেয়া (Due)</div>
+        </div>
+    </div>
+
+    <!-- Right Column (Weather/Info in image, we use it for alerts/quick info) -->
+    <div class="card" style="grid-column: span 4; background: linear-gradient(180deg, #4B497B 0%, #2D2A54 100%); color: white; position:relative; overflow:hidden;">
+        <h3 style="color:white; z-index:2; position:relative;">Quick Alerts</h3>
+        <p style="color:rgba(255,255,255,0.7); z-index:2; position:relative; margin-bottom:24px;">System Notifications</p>
+        
+        <div style="z-index:2; position:relative;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; background:rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
+                <div style="width:12px; height:12px; background:var(--danger); border-radius:50%;"></div>
+                <div>Low Stock: 3 items</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
+                <div style="width:12px; height:12px; background:var(--warning); border-radius:50%;"></div>
+                <div>Pending Dues: 5 customers</div>
+            </div>
+        </div>
+        
+        <div style="position:absolute; right:-20px; bottom:-20px; width:150px; height:150px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
+    </div>
+
+    <!-- Row 2: Charts and Tables -->
+    <div class="card" style="grid-column: span 8;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3>সাম্প্রতিক বিক্রয় (Recent Sales)</h3>
+            <button class="btn btn-primary" style="padding: 8px 16px; font-size:12px;">View All</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>গ্রাহক</th>
+                        <th>পরিমাণ</th>
+                        <th>পেমেন্ট</th>
+                        <th>স্ট্যাটাস</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#INV-1024</td>
+                        <td>Rahim Uddin</td>
+                        <td>৳1,250</td>
+                        <td><span class="badge" style="background:#E2136E; color:white;">bKash</span></td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>#INV-1023</td>
+                        <td>Karim Hasan</td>
+                        <td>৳3,400</td>
+                        <td><span class="badge" style="background:#8E8D9B; color:white;">Cash</span></td>
+                        <td><span class="badge badge-warning">Due (৳1000)</span></td>
+                    </tr>
+                    <tr>
+                        <td>#INV-1022</td>
+                        <td>Suma Akter</td>
+                        <td>৳850</td>
+                        <td><span class="badge" style="background:#F7941D; color:white;">Nagad</span></td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="grid-column: span 4; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <h3 style="align-self:flex-start;">Payment Methods</h3>
+        <!-- Placeholder for Chart.js -->
+        <div style="position: relative; width: 200px; height: 200px; margin-top:24px;">
+            <canvas id="paymentChart"></canvas>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <div style="font-size: 24px; font-weight: 700;">89%</div>
+                <div style="font-size: 10px; color: var(--text-muted);">Cash Flow</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Since this view is loaded dynamically, we init scripts here or dispatch an event
+    setTimeout(() => {
+        const ctx = document.getElementById('paymentChart');
+        if(ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash', 'bKash', 'Nagad', 'Due'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: ['#4CAF50', '#E2136E', '#F7941D', '#FFB830'],
+                        borderWidth: 0,
+                        cutout: '80%'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    }, 100);
+</script>

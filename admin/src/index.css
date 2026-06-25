@@ -1,0 +1,138 @@
+:root {
+  /* Colors based on reference image */
+  --bg-sidebar: #2D2A54;
+  --bg-main: #F5F6FA;
+  --bg-card: #FFFFFF;
+  
+  /* Primary & Accents */
+  --primary: #2D2A54;
+  --primary-light: #5A54A4;
+  --accent-teal: #00D4AA;
+  --accent-pink: #FF6B9E;
+  --accent-orange: #FF9B30;
+  
+  /* Text Colors */
+  --text-main: #1E1B4B;
+  --text-muted: #8E8D9B;
+  --text-sidebar: rgba(255, 255, 255, 0.7);
+  --text-sidebar-active: #FFFFFF;
+  
+  /* Status Colors */
+  --success: #4CAF50;
+  --danger: #FF4B4B;
+  --warning: #FFB830;
+  
+  /* Styling Variables */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.08);
+  
+  /* Transitions */
+  --transition: all 0.3s ease;
+  
+  /* Fonts */
+  --font-family: 'Inter', 'Hind Siliguri', sans-serif;
+}
+
+body.dark-mode {
+  --bg-sidebar: #0D0D1A;
+  --bg-main: #151525;
+  --bg-card: #1E1E35;
+  --text-main: #F5F6FA;
+  --text-muted: #A0A0B0;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+/* Base Typography & Elements */
+h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
+p { color: var(--text-muted); line-height: 1.6; }
+
+/* Reusable Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  font-family: var(--font-family);
+}
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(45, 42, 84, 0.2); }
+.btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(45, 42, 84, 0.3); }
+
+/* Badges */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; }
+.badge-success { background: rgba(76, 175, 80, 0.1); color: var(--success); }
+.badge-danger { background: rgba(255, 75, 75, 0.1); color: var(--danger); }
+.badge-warning { background: rgba(255, 184, 48, 0.1); color: var(--warning); }
+
+/* Hide Number Input Spinners Globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Custom Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(142, 141, 155, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(142, 141, 155, 0.6);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(142, 141, 155, 0.3) transparent;
+}
+
+/* Responsive Table Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  .btn { padding: 10px 16px; font-size: 13px; }
+}

@@ -1,0 +1,61 @@
+:root {
+  /* Colors based on reference image */
+  --bg-sidebar: #2D2A54;
+  --bg-main: #F5F6FA;
+  --bg-card: #FFFFFF;
+  
+  /* Primary & Accents */
+  --primary: #2D2A54;
+  --primary-light: #5A54A4;
+  --accent-teal: #00D4AA;
+  --accent-pink: #FF6B9E;
+  --accent-orange: #FF9B30;
+  
+  /* Text Colors */
+  --text-main: #1E1B4B;
+  --text-muted: #8E8D9B;
+  --text-sidebar: rgba(255, 255, 255, 0.7);
+  --text-sidebar-active: #FFFFFF;
+  
+  /* Status Colors */
+  --success: #4CAF50;
+  --danger: #FF4B4B;
+  --warning: #FFB830;
+  
+  /* Styling Variables */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.12);
+  
+  /* Transitions */
+  --transition: all 0.3s ease;
+  
+  /* Fonts */
+  --font-family: 'Inter', 'Hind Siliguri', sans-serif;
+}
+
+body.dark-mode {
+  --bg-sidebar: #0D0D1A;
+  --bg-main: #151525;
+  --bg-card: #1E1E35;
+  --text-main: #F5F6FA;
+  --text-muted: #A0A0B0;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow-x: hidden;
+}

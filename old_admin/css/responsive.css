@@ -1,0 +1,53 @@
+/* Responsive Styles */
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(1, 1fr) !important;
+    }
+    
+    .dashboard-grid > div {
+        grid-column: span 1 !important;
+    }
+    
+    /* Make the 3-column row inside the first block responsive */
+    .dashboard-grid > div:first-child {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .dashboard-grid > div:first-child > div:first-child {
+        grid-column: span 2 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid > div:first-child {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .dashboard-grid > div:first-child > div:first-child {
+        grid-column: span 1 !important;
+    }
+    
+    /* Topbar adjustments for mobile */
+    .topbar {
+        padding: 0 20px;
+    }
+    
+    .content-area {
+        padding: 0 20px 20px 20px;
+    }
+
+    /* Show hamburger menu, hide sidebar by default */
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+    }
+    
+    .sidebar.open {
+        left: 0;
+    }
+}

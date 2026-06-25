@@ -1,0 +1,255 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.datePicker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.datePicker input {
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-main);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 4px;
+  outline: none;
+  font-family: inherit;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.summaryBox {
+  padding: 24px;
+  border-radius: var(--radius-md);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryBox h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 2;
+}
+
+.summaryBox .amount {
+  font-size: 32px;
+  font-weight: bold;
+  position: relative;
+  z-index: 2;
+}
+
+.incomeBox {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.expenseBox {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.profitBox {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+.chartContainer {
+  height: 350px;
+  margin-top: 16px;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th {
+  text-align: left;
+  padding: 16px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(0,0,0,0.05);
+}
+
+.table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+  transition: var(--transition);
+}
+
+.table tbody tr {
+  transition: var(--transition);
+}
+
+.table tbody tr:hover td {
+  background: rgba(0,0,0,0.02);
+}
+
+.transactionIncome {
+  color: #10B981;
+  font-weight: bold;
+}
+
+.transactionExpense {
+  color: #EF4444;
+  font-weight: bold;
+}
+
+/* Print Specific Styles */
+.printHeader {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 32px;
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+  padding-bottom: 16px;
+}
+
+.printHeader img {
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.printHeader h1 {
+  font-size: 24px;
+  margin: 0 0 4px 0;
+  color: #000;
+}
+
+.printHeader p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide elements not needed in print */
+  .header, 
+  .filters,
+  button,
+  nav,
+  aside,
+  .sidebar,
+  .printHide {
+    display: none !important;
+  }
+
+  /* Show the custom print header */
+  .printHeader {
+    display: flex !important;
+  }
+
+  /* Adjust container to take full width */
+  .container {
+    padding: 0 !important;
+    gap: 16px !important;
+  }
+  
+  /* Layout adjustments for main layout wrapper if needed */
+  :global(.Layout_content__3Rz0O) { /* Just in case Layout applies padding */
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Make summary boxes print clearly (browsers often strip background colors unless forced) */
+  .summaryBox {
+    border: 1px solid #ccc;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Modify gradients for print so text is legible */
+  .incomeBox {
+    background: #e6f8f0 !important;
+    border-left: 5px solid #10B981;
+  }
+  
+  .expenseBox {
+    background: #fdf2f2 !important;
+    border-left: 5px solid #EF4444;
+  }
+  
+  .profitBox {
+    background: #eff6ff !important;
+    border-left: 5px solid #3B82F6;
+  }
+
+  .summaryBox h3 {
+    color: #555 !important;
+  }
+
+  .summaryBox .amount {
+    color: #000 !important;
+  }
+
+  /* Card borders */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    padding: 16px !important;
+    break-inside: avoid;
+  }
+
+  .chartContainer {
+    height: 250px !important; /* Smaller chart for print to fit on one page */
+  }
+
+  .table th, .table td {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+}
