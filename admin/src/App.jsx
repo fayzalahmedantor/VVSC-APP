@@ -15,6 +15,7 @@ import Expenses from './pages/Expenses';
 import Loyalty from './pages/Loyalty';
 import PrivateRoute from './components/layout/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
+import ReloadPrompt from './components/common/ReloadPrompt';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="sms-settings" element={<PrivateRoute adminOnly={true}><SmsSettings /></PrivateRoute>} />
           </Route>
         </Routes>
+        <ReloadPrompt />
       </BrowserRouter>
     </AuthProvider>
   );
