@@ -82,6 +82,7 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
             <p><strong>Type:</strong> {customer.brand} {customer.deviceType}</p>
             {customer.imeiOrSerial && <p><strong>Model/SN:</strong> {customer.imeiOrSerial}</p>}
             {customer.deliveryDate && <p><strong>Delivery:</strong> {formatDate(customer.deliveryDate)}</p>}
+            {customer.warranty && customer.warranty !== 'None' && <p><strong>Warranty:</strong> {customer.warranty}</p>}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer, MessageCircle } from 'lucide-react';
 import { getCustomers, addCustomer, updateCustomer, deleteCustomer } from '../services/customerService';
 import { getProducts, updateProduct, addInventoryHistory } from '../services/inventoryService';
 import { triggerAutomation } from '../services/messagingService';
@@ -13,6 +13,19 @@ import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
 import styles from './Customers.module.css';
+
+const getWhatsAppLink = (phone) => {
+  if (!phone) return '#';
+  let number = phone.replace(/[^0-9]/g, '');
+  
+  // WhatsApp requires country code. Prepend 88 for BD numbers if missing.
+  if (number.startsWith('01')) {
+    number = '88' + number;
+  }
+  
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  return isMobile ? `https://wa.me/${number}` : `https://web.whatsapp.com/send/?phone=${number}`;
+};
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -158,7 +171,8 @@ const Customers = () => {
     status: 'Received',
     paymentMethod: 'Cash',
     notes: '',
-    mechanic: ''
+    mechanic: '',
+    warranty: 'None'
   });
 
   const handleOpenModal = (customer = null) => {
@@ -178,7 +192,8 @@ const Customers = () => {
         status: customer.status || 'Received',
         paymentMethod: customer.paymentMethod || 'Cash',
         notes: customer.notes || '',
-        mechanic: customer.mechanic || ''
+        mechanic: customer.mechanic || '',
+        warranty: customer.warranty || 'None'
       });
     } else {
       setEditingCustomer(null);
@@ -187,7 +202,7 @@ const Customers = () => {
       const defaultDate = tomorrow.toISOString().split('T')[0];
 
       setFormData({
-        name: '', phone: '', address: '', brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: ''
+        name: '', phone: '', address: '', brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: '', warranty: 'None'
       });
     }
     setIsModalOpen(true);
@@ -436,7 +451,20 @@ const Customers = () => {
                           </div>
                         </div>
                       </td>
-                      <td>{customer.phone}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{customer.phone}</span>
+                          <a 
+                            href={getWhatsAppLink(customer.phone)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{ color: '#25D366', display: 'flex' }}
+                            title="Message on WhatsApp"
+                          >
+                            <MessageCircle size={18} />
+                          </a>
+                        </div>
+                      </td>
                       <td>
                         <div style={{ fontWeight: 600 }}>{customer.brand} {customer.deviceType}</div>
                         <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>SN: {customer.imeiOrSerial}</div>
@@ -784,7 +812,18 @@ const Customers = () => {
                     {b2bMechanics.map(m => <option key={m.id} value={m.name}>{m.name} {m.shopName ? `(${m.shopName})` : ''}</option>)}
                   </select>
                 </div>
-                <div></div>
+                <div className={styles.formGroup}>
+                  <label>Warranty Period</label>
+                  <select value={formData.warranty} onChange={e => setFormData({...formData, warranty: e.target.value})}>
+                    <option value="None">No Warranty</option>
+                    <option value="7 Days">7 Days</option>
+                    <option value="15 Days">15 Days</option>
+                    <option value="1 Month">1 Month</option>
+                    <option value="3 Months">3 Months</option>
+                    <option value="6 Months">6 Months</option>
+                    <option value="1 Year">1 Year</option>
+                  </select>
+                </div>
               </div>
 
               <div className={styles.billingBox}>
