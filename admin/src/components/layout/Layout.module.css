@@ -1,7 +1,7 @@
 .appContainer {
   display: flex;
   height: 100vh;
-  width: 100%;
+  width: 100vw;
   overflow: hidden;
 }
 
@@ -145,8 +145,6 @@
   flex-direction: column;
   overflow: hidden;
   background-color: var(--bg-main);
-  min-width: 0;
-  width: 100%;
 }
 
 .topbar {
@@ -212,8 +210,6 @@
   flex: 1;
   padding: 0 40px 40px 40px;
   overflow-y: auto;
-  min-width: 0;
-  width: 100%;
 }
 
 /* Responsive */

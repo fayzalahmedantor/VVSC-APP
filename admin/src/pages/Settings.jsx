@@ -174,7 +174,7 @@ const Settings = () => {
 
             <div className={styles.formGroup}>
               <label>Contact Phone</label>
-              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-card, #fff)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-card, #fff)' }}>
                 <span style={{ padding: '0 12px', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-muted, #64748b)', borderRight: '1px solid var(--border-color, #e2e8f0)', height: '100%', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
                 <input 
                   required 
