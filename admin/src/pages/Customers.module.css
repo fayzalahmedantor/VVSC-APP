@@ -469,7 +469,8 @@
   }
   .modalContent {
     padding: 20px;
-    margin: 10px;
+    width: calc(100% - 32px);
+    margin: 16px;
   }
   .actionBtns {
     flex-wrap: wrap;

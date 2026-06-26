@@ -188,7 +188,8 @@
   }
   .modalContent {
     padding: 20px;
-    margin: 10px;
+    width: calc(100% - 32px);
+    margin: 16px;
   }
   .splitLayout {
     grid-template-columns: 1fr;
