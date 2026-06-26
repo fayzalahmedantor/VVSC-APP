@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, MessageSquare } from 'lucide-react';
-import { getSmsSettings, updateSmsSettings } from '../services/messagingService';
+import { Save, MessageSquare, RefreshCw } from 'lucide-react';
+import { getSmsSettings, updateSmsSettings, defaultSmsSettings } from '../services/messagingService';
 import styles from './Settings.module.css';
 
 const SmsSettings = () => {
@@ -46,6 +46,18 @@ const SmsSettings = () => {
       alert("Failed to save SMS settings.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetDefaults = () => {
+    if(window.confirm('Are you sure you want to load the default Bengali messages? This will overwrite your current templates.')) {
+      setSmsSettings({
+        ...smsSettings,
+        msgReceived: defaultSmsSettings.msgReceived,
+        msgReady: defaultSmsSettings.msgReady,
+        msgDelivered: defaultSmsSettings.msgDelivered,
+        msgCancelled: defaultSmsSettings.msgCancelled
+      });
     }
   };
 
@@ -143,9 +155,12 @@ const SmsSettings = () => {
               />
             </div>
 
-            <div className={styles.actions} style={{ marginTop: '24px' }}>
+            <div className={styles.actions} style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 <Save size={18} /> {saving ? 'Saving...' : 'Save SMS Settings'}
+              </button>
+              <button type="button" className="btn" onClick={handleResetDefaults} style={{ background: 'rgba(0,0,0,0.05)' }}>
+                <RefreshCw size={18} /> Load New Templates
               </button>
             </div>
           </form>

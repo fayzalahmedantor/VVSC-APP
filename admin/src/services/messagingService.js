@@ -3,14 +3,14 @@ import { db } from './firebase';
 
 const SMS_SETTINGS_DOC = 'smsSettings';
 
-const defaultSmsSettings = {
+export const defaultSmsSettings = {
   apiUrl: '',
   apiKey: '',
   senderId: '',
-  msgReceived: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি মেরামতের জন্য জমা নেওয়া হয়েছে। সম্ভাব্য খরচ: {TotalBill} টাকা। ধন্যবাদ! স্ট্যাটাস দেখতে ক্লিক করুন: {TrackingLink}',
-  msgReady: 'প্রিয় {CustomerName}, আপনার {DeviceType} এর মেরামত সম্পন্ন হয়েছে। বকেয়া বিল: {DueBalance} টাকা। অনুগ্রহ করে সংগ্রহ করে নিন। স্ট্যাটাস: {TrackingLink}',
-  msgDelivered: 'প্রিয় {CustomerName}, আমাদের সেবা গ্রহণ করার জন্য ধন্যবাদ! আপনার {DeviceType} টি ডেলিভারি করা হয়েছে। মোট জমা: {TotalPaid} টাকা।',
-  msgCancelled: 'প্রিয় {CustomerName}, দুঃখিত! কোনো কারণে আপনার {DeviceType} এর মেরামতটি বাতিল করা হয়েছে। অনুগ্রহ করে ডিভাইসটি সংগ্রহ করে নিন।'
+  msgReceived: 'আসসালামু আলাইকুম {CustomerName}, আপনার {DeviceType} টি আমরা যত্ন সহকারে মেরামতের জন্য গ্রহণ করেছি। এর আনুমানিক খরচ হতে পারে {TotalBill} টাকা। ডিভাইসের বর্তমান অবস্থা জানতে এই লিংকে ক্লিক করুন: {TrackingLink} । আমাদের উপর আস্থা রাখার জন্য অনেক ধন্যবাদ!',
+  msgReady: 'হ্যালো {CustomerName}, আনন্দের সাথে জানাচ্ছি যে আপনার {DeviceType} টি সফলভাবে ঠিক করা হয়েছে! বকেয়া {DueBalance} টাকা পরিশোধ করে আপনার সুবিধামতো সময়ে ডিভাইসটি নিয়ে যেতে পারেন। বিস্তারিত: {TrackingLink} । যেকোনো প্রয়োজনে আমাদের কল করতে পারেন।',
+  msgDelivered: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি আজ আপনাকে বুঝিয়ে দেওয়া হয়েছে (মোট জমা: {TotalPaid} টাকা)। আমাদের সার্ভিস নেওয়ার জন্য আপনাকে অসংখ্য ধন্যবাদ। ডিভাইসটি ব্যবহার করতে গিয়ে কোনো সমস্যা মনে হলে অবশ্যই আমাদের জানাবেন। ভালো থাকবেন!',
+  msgCancelled: 'প্রিয় {CustomerName}, আমরা আন্তরিকভাবে দুঃখিত! কিছু যান্ত্রিক বা পার্টস সমস্যার কারণে আপনার {DeviceType} টি মেরামত করা সম্ভব হয়নি। অনুগ্রহ করে সময় করে ডিভাইসটি আমাদের শপ থেকে নিয়ে যাবেন। আপনার সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।'
 };
 
 export const getSmsSettings = async () => {

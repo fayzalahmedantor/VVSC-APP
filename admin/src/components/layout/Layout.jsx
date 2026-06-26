@@ -11,11 +11,7 @@ const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Check initial preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true);
-      document.body.classList.add('dark-mode');
-    }
+    // Disabled automatic dark mode based on system preference
   }, []);
 
   const toggleTheme = () => {
