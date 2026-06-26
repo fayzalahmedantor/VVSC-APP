@@ -7,9 +7,10 @@ const defaultSmsSettings = {
   apiUrl: '',
   apiKey: '',
   senderId: '',
-  templateReceived: 'Dear {CustomerName}, your device {DeviceType} has been received for repair. Estimated cost: {TotalBill} Tk. Thank you!',
-  templateReady: 'Dear {CustomerName}, your {DeviceType} repair is complete and ready for delivery. Due balance: {DueBalance} Tk.',
-  templateDelivered: 'Dear {CustomerName}, thank you for choosing us! Your {DeviceType} has been delivered. Total Paid: {TotalPaid} Tk.'
+  msgReceived: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি মেরামতের জন্য জমা নেওয়া হয়েছে। সম্ভাব্য খরচ: {TotalBill} টাকা। ধন্যবাদ!',
+  msgReady: 'প্রিয় {CustomerName}, আপনার {DeviceType} এর মেরামত সম্পন্ন হয়েছে। বকেয়া বিল: {DueBalance} টাকা। অনুগ্রহ করে সংগ্রহ করে নিন।',
+  msgDelivered: 'প্রিয় {CustomerName}, আমাদের সেবা গ্রহণ করার জন্য ধন্যবাদ! আপনার {DeviceType} টি ডেলিভারি করা হয়েছে। মোট জমা: {TotalPaid} টাকা।',
+  msgCancelled: 'প্রিয় {CustomerName}, দুঃখিত! কোনো কারণে আপনার {DeviceType} এর মেরামতটি বাতিল করা হয়েছে। অনুগ্রহ করে ডিভাইসটি সংগ্রহ করে নিন।'
 };
 
 export const getSmsSettings = async () => {
@@ -52,8 +53,8 @@ const replaceVariables = (template, customer) => {
 };
 
 export const sendSMS = async (phone, message, settings) => {
-  if (!settings.apiUrl || !settings.apiKey || !phone) {
-    console.log("SMS API not configured properly or phone is missing.");
+  if (!settings.apiUrl || !phone) {
+    console.log("SMS API URL or phone is missing.");
     return false;
   }
 
@@ -71,12 +72,29 @@ export const sendSMS = async (phone, message, settings) => {
     
     // Clean up the base URL if the user pasted the entire example URL
     let baseUrl = settings.apiUrl.split('?')[0]; 
-    if (!baseUrl) baseUrl = 'http://bulksmsbd.net/api/smsapi'; // Fallback
+    if (!baseUrl) baseUrl = 'https://bulksmsbd.net/api/smsapi'; // Fallback
+    
+    // Enforce HTTPS to prevent mixed-content blocking on live site
+    if (baseUrl.startsWith('http://')) {
+      baseUrl = baseUrl.replace('http://', 'https://');
+    }
+
+    // Auto-extract API key if user pasted the full URL in the API URL field
+    let extractedApiKey = settings.apiKey;
+    if (!extractedApiKey && settings.apiUrl.includes('api_key=')) {
+      const urlParams = new URLSearchParams(settings.apiUrl.split('?')[1]);
+      extractedApiKey = urlParams.get('api_key');
+    }
+
+    if (!extractedApiKey) {
+      console.log("No API Key found");
+      return false;
+    }
 
     // Build the query string specifically for BulkSMSBD
     const params = new URLSearchParams({
-      api_key: settings.apiKey,
-      type: 'text',
+      api_key: extractedApiKey,
+      type: 'unicode', // Changed to unicode for Bengali characters
       number: formattedPhone,
       senderid: settings.senderId || '8809648909194',
       message: message
@@ -104,9 +122,10 @@ export const triggerAutomation = async (customer, eventType) => {
     if (!settings.apiUrl) return; // Silent skip if not configured
     
     let template = '';
-    if (eventType === 'received') template = settings.templateReceived;
-    else if (eventType === 'ready') template = settings.templateReady;
-    else if (eventType === 'delivered') template = settings.templateDelivered;
+    if (eventType === 'received') template = settings.msgReceived;
+    else if (eventType === 'ready') template = settings.msgReady;
+    else if (eventType === 'delivered') template = settings.msgDelivered;
+    else if (eventType === 'cancelled') template = settings.msgCancelled;
 
     if (!template) return;
 

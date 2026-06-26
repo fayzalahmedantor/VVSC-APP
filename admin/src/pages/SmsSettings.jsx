@@ -11,9 +11,10 @@ const SmsSettings = () => {
     apiUrl: '',
     apiKey: '',
     senderId: '',
-    templateReceived: '',
-    templateReady: '',
-    templateDelivered: ''
+    msgReceived: '',
+    msgReady: '',
+    msgDelivered: '',
+    msgCancelled: ''
   });
 
   useEffect(() => {
@@ -105,8 +106,8 @@ const SmsSettings = () => {
             <div className={styles.formGroup}>
               <label>Received Template (When added to pending)</label>
               <textarea 
-                name="templateReceived" 
-                value={smsSettings.templateReceived || ''} 
+                name="msgReceived" 
+                value={smsSettings.msgReceived || ''} 
                 onChange={handleSmsChange} 
                 rows="2"
               />
@@ -115,18 +116,28 @@ const SmsSettings = () => {
             <div className={styles.formGroup}>
               <label>Ready Template (When status marked as Ready)</label>
               <textarea 
-                name="templateReady" 
-                value={smsSettings.templateReady || ''} 
+                name="msgReady" 
+                value={smsSettings.msgReady || ''} 
                 onChange={handleSmsChange} 
                 rows="2"
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label>Delivered / Canceled Template</label>
+              <label>Delivered Template</label>
               <textarea 
-                name="templateDelivered" 
-                value={smsSettings.templateDelivered || ''} 
+                name="msgDelivered" 
+                value={smsSettings.msgDelivered || ''} 
+                onChange={handleSmsChange} 
+                rows="2"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Canceled Template</label>
+              <textarea 
+                name="msgCancelled" 
+                value={smsSettings.msgCancelled || ''} 
                 onChange={handleSmsChange} 
                 rows="2"
               />
