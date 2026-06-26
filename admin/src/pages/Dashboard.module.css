@@ -178,20 +178,37 @@
 
 @media (max-width: 1200px) {
   .dashboardGrid {
-    grid-template-columns: repeat(1, 1fr);
-  }
-  .colSpan8, .colSpan4, .colSpan2, .colSpan1 {
-    grid-column: span 1 !important;
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
   
   .topRow {
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .dashboardGrid > div {
+    grid-column: 1 / -1 !important;
+  }
+  
+  .topRow > div {
+    grid-column: span 1 !important;
+  }
+  
+  /* Force Today's Summary to span full width on tablet */
+  .topRow > div:first-child {
+    grid-column: 1 / -1 !important;
   }
 }
 
 @media (max-width: 768px) {
   .topRow {
     grid-template-columns: 1fr !important;
+  }
+  
+  .topRow > div {
+    grid-column: 1 / -1 !important;
   }
 }
 
