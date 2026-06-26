@@ -7,10 +7,9 @@ const defaultSmsSettings = {
   apiUrl: '',
   apiKey: '',
   senderId: '',
-  templateReceived: 'প্রিয় {CustomerName}, আপনার {Brand} {DeviceType} টি মেরামতের জন্য জমা নেওয়া হয়েছে। সম্ভাব্য বিল: {TotalBill} টাকা। ধন্যবাদ!',
-  templateReady: 'প্রিয় {CustomerName}, সুখবর! আপনার {DeviceType} টির মেরামত সম্পন্ন হয়েছে এবং ডেলিভারির জন্য প্রস্তুত। বকেয়া বিল: {DueBalance} টাকা। দ্রুত সংগ্রহ করুন!',
-  templateDelivered: 'প্রিয় {CustomerName}, আমাদের সেবা গ্রহণের জন্য ধন্যবাদ! আপনার {DeviceType} টি ডেলিভারি করা হয়েছে। সর্বমোট প্রদান: {TotalPaid} টাকা। আবারও আসবেন!',
-  templateCancelled: 'প্রিয় {CustomerName}, দুখিত! কোনো কারণে আপনার {DeviceType} টির মেরামত বাতিল করা হয়েছে। অনুগ্রহ করে ডিভাইসটি সংগ্রহ করুন।'
+  templateReceived: 'Dear {CustomerName}, your device {DeviceType} has been received for repair. Estimated cost: {TotalBill} Tk. Thank you!',
+  templateReady: 'Dear {CustomerName}, your {DeviceType} repair is complete and ready for delivery. Due balance: {DueBalance} Tk.',
+  templateDelivered: 'Dear {CustomerName}, thank you for choosing us! Your {DeviceType} has been delivered. Total Paid: {TotalPaid} Tk.'
 };
 
 export const getSmsSettings = async () => {
@@ -108,7 +107,6 @@ export const triggerAutomation = async (customer, eventType) => {
     if (eventType === 'received') template = settings.templateReceived;
     else if (eventType === 'ready') template = settings.templateReady;
     else if (eventType === 'delivered') template = settings.templateDelivered;
-    else if (eventType === 'cancelled') template = settings.templateCancelled;
 
     if (!template) return;
 

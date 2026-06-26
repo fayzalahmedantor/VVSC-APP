@@ -25,8 +25,7 @@
   border: none;
   background: transparent;
   outline: none;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   color: var(--text-main);
 }
 
@@ -170,13 +169,6 @@
   color: white;
 }
 
-.splitLayout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
   .header {
@@ -189,10 +181,6 @@
   }
   .modalContent {
     padding: 20px;
-    width: calc(100% - 32px);
-    margin: 16px;
-  }
-  .splitLayout {
-    grid-template-columns: 1fr;
+    margin: 10px;
   }
 }

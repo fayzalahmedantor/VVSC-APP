@@ -68,8 +68,7 @@
   border: none;
   background: transparent;
   outline: none;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   color: var(--text-main);
   font-size: 14px;
 }
@@ -470,8 +469,7 @@
   }
   .modalContent {
     padding: 20px;
-    width: calc(100% - 32px);
-    margin: 16px;
+    margin: 10px;
   }
   .actionBtns {
     flex-wrap: wrap;

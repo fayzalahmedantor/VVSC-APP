@@ -170,11 +170,3 @@
 .modalActions button {
   flex: 1;
 }
-
-@media (max-width: 768px) {
-  .modalContent {
-    width: calc(100% - 32px);
-    margin: 16px;
-    padding: 24px;
-  }
-}

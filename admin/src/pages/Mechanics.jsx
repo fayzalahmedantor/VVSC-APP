@@ -202,7 +202,7 @@ const Mechanics = () => {
         </button>
       </div>
 
-      <div className={styles.splitLayout}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
         
         {/* Left Side: Mechanic List */}
         <div className={styles.card}>
@@ -336,7 +336,7 @@ const Mechanics = () => {
                       if (val.length <= 11) setFormData({...formData, phone: val});
                     }} 
                     placeholder="01XXXXXXXXX" 
-                    style={{ border: 'none', margin: 0, flex: 1, minWidth: 0, padding: '10px 12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
+                    style={{ border: 'none', margin: 0, width: '100%', padding: '10px 12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
                   />
                 </div>
               </div>

@@ -238,7 +238,6 @@
   }
   .modalContent {
     padding: 20px;
-    width: calc(100% - 32px);
-    margin: 16px;
+    margin: 10px;
   }
 }

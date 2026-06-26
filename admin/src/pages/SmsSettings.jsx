@@ -13,8 +13,7 @@ const SmsSettings = () => {
     senderId: '',
     templateReceived: '',
     templateReady: '',
-    templateDelivered: '',
-    templateCancelled: ''
+    templateDelivered: ''
   });
 
   useEffect(() => {
@@ -124,20 +123,10 @@ const SmsSettings = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Delivered Template</label>
+              <label>Delivered / Canceled Template</label>
               <textarea 
                 name="templateDelivered" 
                 value={smsSettings.templateDelivered || ''} 
-                onChange={handleSmsChange} 
-                rows="2"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Cancelled Template (When status marked as Cancel)</label>
-              <textarea 
-                name="templateCancelled" 
-                value={smsSettings.templateCancelled || ''} 
                 onChange={handleSmsChange} 
                 rows="2"
               />
