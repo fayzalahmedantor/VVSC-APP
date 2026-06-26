@@ -174,8 +174,8 @@ const Settings = () => {
 
             <div className={styles.formGroup}>
               <label>Contact Phone</label>
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-card, #fff)' }}>
-                <span style={{ padding: '0 12px', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-muted, #64748b)', borderRight: '1px solid var(--border-color, #e2e8f0)', height: '100%', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
+              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-card, #fff)' }}>
+                <span style={{ padding: '0 12px', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-muted, #64748b)', borderRight: '1px solid var(--border-color, #e2e8f0)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
                 <input 
                   required 
                   type="tel" 
@@ -186,7 +186,7 @@ const Settings = () => {
                     if (val.length <= 11) handleChange({ target: { name: 'phone', value: val } });
                   }} 
                   placeholder="01XXXXXXXXX" 
-                  style={{ border: 'none', margin: 0, width: '100%', padding: '10px 12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
+                  style={{ border: 'none', margin: 0, width: '100%', padding: '12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
                 />
               </div>
             </div>
