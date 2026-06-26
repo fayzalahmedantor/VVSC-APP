@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import QRCode from 'react-qr-code';
 import styles from './Invoice.module.css';
 
 const Invoice = ({ customer, shopProfile, onClose }) => {
@@ -12,9 +13,8 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
 
   const invoiceNumber = `INV-${new Date(customer.createdAt).getTime().toString().slice(-6)}`;
   
-  // Generate a QR code URL for the Invoice
-  const qrCodeData = `Memo:${invoiceNumber}|Customer:${customer.phone}|Total:${customer.totalBill}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrCodeData)}&margin=0`;
+  // Tracking URL for the QR code
+  const trackingUrl = `${window.location.origin}/track/${customer.id}`;
 
   useEffect(() => {
     const handleAfterPrint = () => {
@@ -58,7 +58,9 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
           
           <div className={styles.invoiceTitle}>
             <h2>INVOICE</h2>
-            <img src={qrCodeUrl} alt="QR Code" className={styles.qrCode} />
+            <div className={styles.qrCodeContainer} style={{ background: 'white', padding: '8px', borderRadius: '8px', display: 'inline-block' }}>
+              <QRCode value={trackingUrl} size={100} level="L" />
+            </div>
             <div className={styles.metaInfo}>
               <p><strong>Memo No:</strong> {invoiceNumber}</p>
               <p><strong>Date:</strong> {formatDate(customer.createdAt)}</p>

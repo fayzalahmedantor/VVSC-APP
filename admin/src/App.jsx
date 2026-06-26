@@ -13,6 +13,7 @@ import Settings from './pages/Settings';
 import SmsSettings from './pages/SmsSettings';
 import Expenses from './pages/Expenses';
 import Loyalty from './pages/Loyalty';
+import Track from './pages/Track';
 import PrivateRoute from './components/layout/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import ReloadPrompt from './components/common/ReloadPrompt';
@@ -23,6 +24,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/track/:id" element={<Track />} />
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="customers" element={<Customers />} />

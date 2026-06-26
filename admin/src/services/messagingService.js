@@ -7,8 +7,8 @@ const defaultSmsSettings = {
   apiUrl: '',
   apiKey: '',
   senderId: '',
-  msgReceived: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি মেরামতের জন্য জমা নেওয়া হয়েছে। সম্ভাব্য খরচ: {TotalBill} টাকা। ধন্যবাদ!',
-  msgReady: 'প্রিয় {CustomerName}, আপনার {DeviceType} এর মেরামত সম্পন্ন হয়েছে। বকেয়া বিল: {DueBalance} টাকা। অনুগ্রহ করে সংগ্রহ করে নিন।',
+  msgReceived: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি মেরামতের জন্য জমা নেওয়া হয়েছে। সম্ভাব্য খরচ: {TotalBill} টাকা। ধন্যবাদ! স্ট্যাটাস দেখতে ক্লিক করুন: {TrackingLink}',
+  msgReady: 'প্রিয় {CustomerName}, আপনার {DeviceType} এর মেরামত সম্পন্ন হয়েছে। বকেয়া বিল: {DueBalance} টাকা। অনুগ্রহ করে সংগ্রহ করে নিন। স্ট্যাটাস: {TrackingLink}',
   msgDelivered: 'প্রিয় {CustomerName}, আমাদের সেবা গ্রহণ করার জন্য ধন্যবাদ! আপনার {DeviceType} টি ডেলিভারি করা হয়েছে। মোট জমা: {TotalPaid} টাকা।',
   msgCancelled: 'প্রিয় {CustomerName}, দুঃখিত! কোনো কারণে আপনার {DeviceType} এর মেরামতটি বাতিল করা হয়েছে। অনুগ্রহ করে ডিভাইসটি সংগ্রহ করে নিন।'
 };
@@ -42,14 +42,16 @@ export const updateSmsSettings = async (settings) => {
 
 const replaceVariables = (template, customer) => {
   if (!template) return '';
+  const trackingLink = `${window.location.origin}/track/${customer.id}`;
+
   return template
     .replace(/{CustomerName}/g, customer.name || '')
-    .replace(/{DeviceType}/g, customer.deviceType || '')
-    .replace(/{Brand}/g, customer.brand || '')
+    .replace(/{DeviceType}/g, `${customer.brand || ''} ${customer.deviceType || ''}`.trim())
     .replace(/{Problem}/g, customer.issue || '')
     .replace(/{TotalBill}/g, customer.estCost || customer.totalBill || '0')
     .replace(/{DueBalance}/g, customer.dueBalance || '0')
-    .replace(/{TotalPaid}/g, customer.advance || '0');
+    .replace(/{TotalPaid}/g, customer.advance || '0')
+    .replace(/{TrackingLink}/g, trackingLink);
 };
 
 export const sendSMS = async (phone, message, settings) => {

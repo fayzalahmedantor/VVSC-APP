@@ -3,7 +3,7 @@ import { getCustomers } from '../services/customerService';
 import { getMechanics } from '../services/mechanicService';
 import { getExpenses } from '../services/expenseService';
 import { getShopProfile } from '../services/settingsService';
-import { Calendar, Filter, Download } from 'lucide-react';
+import { Calendar, Filter, Download, Printer } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import styles from './Report.module.css';
@@ -108,9 +108,14 @@ const Report = () => {
       // Sort by date descending
       filteredTx.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      // Calculate Stats
-      const totalIncome = filteredTx.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
-      const totalExpenses = filteredTx.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
+      // Calculate totals
+      let totalIncome = 0;
+      let totalExpenses = 0;
+      
+      filteredTx.forEach(t => {
+        if (t.type === 'Income') totalIncome += t.amount;
+        if (t.type === 'Expense') totalExpenses += t.amount;
+      });
 
       setTransactions(filteredTx);
       setStats({
@@ -126,7 +131,40 @@ const Report = () => {
     }
   };
 
-  // Chart Data Preparation (Grouping by Date)
+  const handleExportCSV = () => {
+    // Define CSV Headers
+    const headers = ['Date', 'Type', 'Source/Category', 'Name/Note', 'Amount (BDT)'];
+    
+    // Map transactions to CSV rows
+    const rows = transactions.map(t => [
+      new Date(t.date).toLocaleDateString(),
+      t.type,
+      `"${t.source}"`, // Wrap in quotes to handle commas
+      `"${t.name}"`,
+      t.amount
+    ]);
+    
+    // Add Summary at the end
+    rows.push([]);
+    rows.push(['', '', '', 'Total Income', stats.income]);
+    rows.push(['', '', '', 'Total Expense', stats.expenses]);
+    rows.push(['', '', '', 'Net Profit', stats.profit]);
+
+    // Combine headers and rows
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    
+    // Create Blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `financial_report_${filterType}_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Prepare chart data Preparation (Grouping by Date)
   const chartDates = {};
   transactions.forEach(t => {
     const d = t.date.split('T')[0];
@@ -208,9 +246,14 @@ const Report = () => {
             </div>
           )}
 
-          <button className="btn btn-primary" onClick={() => window.print()}>
-            <Download size={18} /> Export
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn" onClick={handleExportCSV} style={{ background: '#10b981', color: '#fff', border: 'none' }}>
+              <Download size={18} /> Excel (CSV)
+            </button>
+            <button className="btn btn-primary" onClick={() => window.print()}>
+              <Printer size={18} /> Print PDF
+            </button>
+          </div>
         </div>
       </div>
 

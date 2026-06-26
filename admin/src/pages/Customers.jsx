@@ -6,16 +6,18 @@ import { getProducts, updateProduct, addInventoryHistory } from '../services/inv
 import { triggerAutomation } from '../services/messagingService';
 import { getDropdownSettings, updateDropdownSetting, getShopProfile } from '../services/settingsService';
 import { getMechanics } from '../services/mechanicService';
-import { db } from '../../services/firebase';
-import BarcodeScanner from '../common/BarcodeScanner';
+import { db } from '../services/firebase';
+import BarcodeScanner from '../components/common/BarcodeScanner';
 import Invoice from './Invoice';
 import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
+import { useAuth } from '../context/AuthContext';
 import styles from './Customers.module.css';
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { userRole } = useAuth();
   
   // Settings & Dropdowns
   const [dropdownOptions, setDropdownOptions] = useState({ brand: [], deviceType: [], issue: [], mechanic: [] });
@@ -460,9 +462,11 @@ const Customers = () => {
                           <button className={styles.iconBtn} onClick={() => handleOpenModal(customer)}>
                             <Edit2 size={18} />
                           </button>
-                          <button className={`${styles.iconBtn} ${styles.delete}`} onClick={() => handleDelete(customer.id)}>
-                            <Trash2 size={18} />
-                          </button>
+                          {userRole === 'admin' && (
+                            <button className={`${styles.iconBtn} ${styles.delete}`} onClick={() => handleDelete(customer.id)}>
+                              <Trash2 size={18} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

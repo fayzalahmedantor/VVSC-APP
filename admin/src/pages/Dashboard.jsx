@@ -6,12 +6,14 @@ import { Plus, Package, Users, TrendingUp, AlertTriangle, Star, Wrench, CheckCir
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import StatusDropdown from '../components/common/StatusDropdown';
+import { useAuth } from '../context/AuthContext';
 import styles from './Dashboard.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
 
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -146,26 +148,30 @@ const Dashboard = () => {
       {/* Row 1: Summary Cards */}
       <div className={styles.topRow} style={{ gridColumn: 'span 12', display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
         
-        {/* Main Summary */}
-        <div className={`${styles.card} ${styles.summaryCard} ${styles.gradientBlue}`} style={{ gridColumn: 'span 4', padding: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
-            <div>
-              <h3 style={{ marginBottom: '8px', fontSize: '24px' }}>Today's Summary</h3>
-              <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px' }}>{todayDate}</p>
-              <div style={{ fontSize: '32px', fontWeight: 700 }}>৳{stats.loading ? '...' : stats.todaySales}</div>
-              <div style={{ fontSize: '14px', opacity: 0.8 }}>Today's Sales</div>
+        {userRole === 'admin' && (
+          <>
+            {/* Main Summary */}
+            <div className={`${styles.card} ${styles.summaryCard} ${styles.gradientBlue}`} style={{ gridColumn: 'span 4', padding: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
+                <div>
+                  <h3 style={{ marginBottom: '8px', fontSize: '24px' }}>Today's Summary</h3>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px' }}>{todayDate}</p>
+                  <div style={{ fontSize: '32px', fontWeight: 700 }}>৳{stats.loading ? '...' : stats.todaySales}</div>
+                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Today's Sales</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Metric Card */}
-        <div className={`${styles.card} ${styles.summaryCard} ${styles.pink}`} style={{ gridColumn: 'span 2' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-            <div className={styles.iconWrapper}><AlertTriangle /></div>
-            <div className={styles.summaryValue}>৳{stats.loading ? '...' : stats.totalDue}</div>
-          </div>
-          <div className={styles.summaryLabel}>Pending Dues</div>
-        </div>
+            {/* Metric Card */}
+            <div className={`${styles.card} ${styles.summaryCard} ${styles.pink}`} style={{ gridColumn: 'span 2' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+                <div className={styles.iconWrapper}><AlertTriangle /></div>
+                <div className={styles.summaryValue}>৳{stats.loading ? '...' : stats.totalDue}</div>
+              </div>
+              <div className={styles.summaryLabel}>Pending Dues</div>
+            </div>
+          </>
+        )}
 
         {/* Metric Card */}
         <div className={`${styles.card} ${styles.summaryCard} ${styles.teal}`} style={{ gridColumn: 'span 2' }}>
