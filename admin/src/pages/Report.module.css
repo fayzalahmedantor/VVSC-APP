@@ -253,3 +253,23 @@
     font-size: 12px !important;
   }
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 16px;
+  }
+}

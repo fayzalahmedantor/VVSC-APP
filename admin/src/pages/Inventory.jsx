@@ -314,7 +314,7 @@ const Inventory = () => {
   return (
     <div className={styles.container}>
       {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
+      <div className={styles.statsGrid}>
         <div className={styles.card} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%)', color: 'white' }}>
           <span style={{ fontSize: '14px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Products</span>
           <span style={{ fontSize: '32px', fontWeight: 800 }}>{totalProductsCount}</span>

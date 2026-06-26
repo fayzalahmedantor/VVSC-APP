@@ -169,6 +169,13 @@
   color: white;
 }
 
+.splitLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .header {
@@ -182,5 +189,8 @@
   .modalContent {
     padding: 20px;
     margin: 10px;
+  }
+  .splitLayout {
+    grid-template-columns: 1fr;
   }
 }
