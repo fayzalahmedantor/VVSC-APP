@@ -849,6 +849,16 @@ const Customers = () => {
         confirmText="Delete"
         isDanger={true}
       />
+
+      {showScanner && (
+        <BarcodeScanner 
+          onScan={(text) => {
+            setFormData({...formData, imeiOrSerial: text});
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 };
