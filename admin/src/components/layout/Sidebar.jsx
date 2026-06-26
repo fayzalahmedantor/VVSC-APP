@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Package, Truck, Users, 
-  Wallet, Star, Wrench, BarChart2, Settings, ChevronDown, AlertCircle, ShoppingCart, UserCheck, BarChart, MessageSquare, LogOut
+  Wallet, Star, Wrench, BarChart2, Settings, ChevronDown, AlertCircle, ShoppingCart, UserCheck, BarChart, MessageSquare, Megaphone, LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getShopProfile } from '../../services/settingsService';
@@ -90,6 +90,10 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
 
             <NavLink onClick={closeSidebar} to="/sms-settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
               <MessageSquare size={20} /> <span>SMS Settings</span>
+            </NavLink>
+
+            <NavLink onClick={closeSidebar} to="/marketing" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <Megaphone size={20} /> <span>Marketing</span>
             </NavLink>
           </>
         )}

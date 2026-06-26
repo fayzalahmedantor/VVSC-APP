@@ -22,3 +22,7 @@ Example:
   <option value="1">Option 1</option>
 </select>
 ```
+
+## App Branding Rule
+The official name of this software application is **VVSC APP**.
+Do not use placeholder names like "ManagePro" or generic titles. Whenever referencing the application name in code, UI elements, or text, always use "VVSC APP" unless explicitly asked otherwise by the user.

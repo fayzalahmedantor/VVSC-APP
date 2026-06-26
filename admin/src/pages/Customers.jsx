@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer, MessageCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer, MessageCircle, Tag } from 'lucide-react';
 import { getCustomers, addCustomer, updateCustomer, deleteCustomer } from '../services/customerService';
 import { getProducts, updateProduct, addInventoryHistory } from '../services/inventoryService';
 import { triggerAutomation } from '../services/messagingService';
@@ -9,6 +9,7 @@ import { getMechanics } from '../services/mechanicService';
 import { db } from '../services/firebase';
 import BarcodeScanner from '../components/common/BarcodeScanner';
 import Invoice from './Invoice';
+import LabelPrint from '../components/common/LabelPrint';
 import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
@@ -153,6 +154,7 @@ const Customers = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [customerToLabel, setCustomerToLabel] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   
@@ -486,6 +488,9 @@ const Customers = () => {
                         <div className={styles.actionBtns}>
                           <button className={styles.iconBtn} onClick={() => setCustomerToPrint(customer)} title="Print Invoice">
                             <Printer size={18} />
+                          </button>
+                          <button className={styles.iconBtn} onClick={() => setCustomerToLabel(customer)} title="Print Label">
+                            <Tag size={18} />
                           </button>
                           <button className={styles.iconBtn} onClick={() => handleOpenModal(customer)}>
                             <Edit2 size={18} />
@@ -876,6 +881,15 @@ const Customers = () => {
           customer={customerToPrint} 
           shopProfile={shopProfile} 
           onClose={() => setCustomerToPrint(null)} 
+        />
+      )}
+
+      {/* Label Print Component */}
+      {customerToLabel && (
+        <LabelPrint 
+          customer={customerToLabel} 
+          shopProfile={shopProfile} 
+          onClose={() => setCustomerToLabel(null)} 
         />
       )}
 

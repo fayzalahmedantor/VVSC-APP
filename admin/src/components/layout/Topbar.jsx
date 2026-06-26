@@ -54,7 +54,8 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
       case '/report': return 'Reports';
       case '/settings': return 'Shop Settings';
       case '/sms-settings': return 'SMS Settings';
-      default: return 'ManagePro';
+      case '/marketing': return 'Marketing';
+      default: return 'VVSC APP';
     }
   };
 
