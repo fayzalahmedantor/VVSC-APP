@@ -6,6 +6,8 @@ import { getProducts, updateProduct, addInventoryHistory } from '../services/inv
 import { triggerAutomation } from '../services/messagingService';
 import { getDropdownSettings, updateDropdownSetting, getShopProfile } from '../services/settingsService';
 import { getMechanics } from '../services/mechanicService';
+import { db } from '../../services/firebase';
+import BarcodeScanner from '../common/BarcodeScanner';
 import Invoice from './Invoice';
 import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -137,6 +139,7 @@ const Customers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -742,7 +745,7 @@ const Customers = () => {
                   <label>Device IMEI / Serial No.</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input type="text" value={formData.imeiOrSerial} onChange={e => setFormData({...formData, imeiOrSerial: e.target.value})} placeholder="e.g. SN-123456789" style={{ flex: 1, margin: 0 }} />
-                    <button type="button" className="btn" style={{ padding: '0 12px', height: '100%', margin: 0 }}><Scan size={20} /></button>
+                    <button type="button" onClick={() => setShowScanner(true)} className="btn" style={{ padding: '0 12px', height: '100%', margin: 0 }}><Scan size={20} /></button>
                   </div>
                 </div>
                 <div className={styles.formGroup}>
