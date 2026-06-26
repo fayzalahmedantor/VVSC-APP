@@ -25,7 +25,9 @@
   border: none;
   background: transparent;
   outline: none;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
   color: var(--text-main);
 }
 
