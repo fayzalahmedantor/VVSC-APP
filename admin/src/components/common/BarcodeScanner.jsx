@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { X } from 'lucide-react';
 import styles from './BarcodeScanner.module.css';
 
@@ -7,34 +7,37 @@ const BarcodeScanner = ({ onScan, onClose }) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Initialize the scanner
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 250, height: 100 } },
-      false // verbose
-    );
+    const html5QrCode = new Html5Qrcode("reader");
 
     const onScanSuccess = (decodedText) => {
-      scanner.clear().then(() => {
+      html5QrCode.stop().then(() => {
         onScan(decodedText);
       }).catch(err => {
-        console.error("Failed to clear scanner", err);
+        console.error("Failed to stop scanner", err);
         onScan(decodedText);
       });
     };
 
     const onScanFailure = (error) => {
-      // Ignored: this is usually just "no barcode found yet"
+      // Ignored
     };
 
-    scanner.render(onScanSuccess, onScanFailure);
+    html5QrCode.start(
+      { facingMode: "environment" }, // Prefer back camera
+      { fps: 10, qrbox: { width: 250, height: 100 } },
+      onScanSuccess,
+      onScanFailure
+    ).catch(err => {
+      console.error("Error starting camera", err);
+      setHasError(true);
+    });
 
     return () => {
       // Cleanup when component unmounts
-      try {
-        scanner.clear();
-      } catch (error) {
-        console.error("Failed to clear html5QrcodeScanner. ", error);
+      if (html5QrCode.isScanning) {
+        html5QrCode.stop().catch(error => {
+          console.error("Failed to stop html5Qrcode. ", error);
+        });
       }
     };
   }, [onScan]);
