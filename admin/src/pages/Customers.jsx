@@ -10,6 +10,7 @@ import { db } from '../services/firebase';
 import BarcodeScanner from '../components/common/BarcodeScanner';
 import Invoice from './Invoice';
 import LabelPrint from '../components/common/LabelPrint';
+import CustomerHistoryModal from '../components/common/CustomerHistoryModal';
 import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
@@ -155,6 +156,7 @@ const Customers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [customerToLabel, setCustomerToLabel] = useState(null);
+  const [historyCustomer, setHistoryCustomer] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   
@@ -177,7 +179,7 @@ const Customers = () => {
     warranty: 'None'
   });
 
-  const handleOpenModal = (customer = null) => {
+  const handleOpenModal = (customer = null, prefillData = null) => {
     if (customer) {
       setEditingCustomer(customer);
       setFormData({
@@ -204,7 +206,10 @@ const Customers = () => {
       const defaultDate = tomorrow.toISOString().split('T')[0];
 
       setFormData({
-        name: '', phone: '', address: '', brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: '', warranty: 'None'
+        name: prefillData?.name || '', 
+        phone: prefillData?.phone || '', 
+        address: prefillData?.address || '', 
+        brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: '', warranty: 'None'
       });
     }
     setIsModalOpen(true);
@@ -445,7 +450,7 @@ const Customers = () => {
                   currentCustomers.map(customer => (
                     <tr key={customer.id}>
                       <td>
-                        <div className={styles.customerInfo} onClick={() => handleOpenModal(customer)} style={{ cursor: 'pointer' }} title="Click to view or edit details">
+                        <div className={styles.customerInfo} onClick={() => setHistoryCustomer(customer)} style={{ cursor: 'pointer' }} title="Click to view full profile and history">
                           <div className={styles.avatar}>{getInitials(customer.name)}</div>
                           <div>
                             <div style={{ fontWeight: 600 }}>{customer.name}</div>
@@ -492,7 +497,7 @@ const Customers = () => {
                           <button className={styles.iconBtn} onClick={() => setCustomerToLabel(customer)} title="Print Label">
                             <Tag size={18} />
                           </button>
-                          <button className={styles.iconBtn} onClick={() => handleOpenModal(customer)}>
+                          <button className={styles.iconBtn} onClick={() => setHistoryCustomer(customer)} title="View Profile & History">
                             <Edit2 size={18} />
                           </button>
                           {userRole === 'admin' && (
@@ -716,7 +721,20 @@ const Customers = () => {
                       value={formData.phone} 
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '');
-                        if (val.length <= 11) setFormData({...formData, phone: val});
+                        if (val.length <= 11) {
+                          setFormData(prev => {
+                            const newData = { ...prev, phone: val };
+                            // Auto-fill logic for returning customer
+                            if (val.length === 11 && !editingCustomer) {
+                              const existingCust = customers.find(c => c.phone === val);
+                              if (existingCust) {
+                                newData.name = existingCust.name || '';
+                                newData.address = existingCust.address || '';
+                              }
+                            }
+                            return newData;
+                          });
+                        }
                       }} 
                       placeholder="01XXXXXXXXX" 
                       style={{ border: 'none', margin: 0, width: '100%', padding: '10px 12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
@@ -892,6 +910,15 @@ const Customers = () => {
           onClose={() => setCustomerToLabel(null)} 
         />
       )}
+
+      {/* Customer History Modal */}
+      <CustomerHistoryModal
+        isOpen={!!historyCustomer}
+        onClose={() => setHistoryCustomer(null)}
+        selectedCustomer={historyCustomer}
+        allCustomers={customers}
+        onOpenEdit={(job, prefillCust) => handleOpenModal(job, prefillCust)}
+      />
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}

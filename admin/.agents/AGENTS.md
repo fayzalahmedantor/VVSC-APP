@@ -26,3 +26,7 @@ Example:
 ## App Branding Rule
 The official name of this software application is **VVSC APP**.
 Do not use placeholder names like "ManagePro" or generic titles. Whenever referencing the application name in code, UI elements, or text, always use "VVSC APP" unless explicitly asked otherwise by the user.
+
+## Mandatory Responsiveness (Mobile & PC)
+- **CRITICAL**: Every single UI design, feature, or layout change you make MUST be fully optimized and responsive for BOTH desktop (PC) and mobile phones simultaneously.
+- Do not wait for the user to complain about mobile layout issues. Proactively use media queries and flexible layouts (Flexbox/Grid) to ensure flawless appearance across all screen sizes right from the first implementation.
