@@ -1,3 +1,13 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -8,6 +18,7 @@
   z-index: 1000;
   backdrop-filter: blur(4px);
   padding: 16px;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
 .modal {
@@ -20,6 +31,7 @@
   flex-direction: column;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .header {
@@ -99,7 +111,7 @@
 }
 
 .addJobBtn {
-  background: var(--primary-color);
+  background: var(--primary, #00D4AA);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -147,7 +159,7 @@
 }
 
 .historyCard:hover {
-  border-color: var(--primary-color);
+  border-color: var(--primary, #00D4AA);
 }
 
 .jobInfo {
@@ -231,7 +243,7 @@
 
 .editBtn {
   background: rgba(0, 212, 170, 0.1);
-  color: var(--primary-color);
+  color: var(--primary, #00D4AA);
   border: none;
   width: 40px; height: 40px;
   border-radius: 50%;
@@ -243,7 +255,7 @@
 }
 
 .editBtn:hover {
-  background: var(--primary-color);
+  background: var(--primary, #00D4AA);
   color: white;
 }
 

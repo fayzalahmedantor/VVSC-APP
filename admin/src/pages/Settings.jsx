@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile } from '../services/settingsService';
 import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
+import { seedDatabase } from '../utils/seeder';
 import { UserPlus, Trash2, Save, Store, Palette, FileText, Users } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
@@ -10,6 +11,7 @@ const Settings = () => {
   const { isDark, toggleTheme } = useOutletContext();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
   const [activeTab, setActiveTab] = useState('general');
   
@@ -59,6 +61,20 @@ const Settings = () => {
       alert("Failed to save settings.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSeed = async () => {
+    if (window.confirm('Are you sure you want to load Demo Data? This will add fake customers, inventory, expenses etc.')) {
+      setIsSeeding(true);
+      const success = await seedDatabase();
+      setIsSeeding(false);
+      if (success) {
+        alert('Demo Data Loaded Successfully! Please refresh the page.');
+        window.location.reload();
+      } else {
+        alert('Failed to load demo data.');
+      }
     }
   };
 
@@ -186,6 +202,14 @@ const Settings = () => {
             <div className={styles.actions}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 <Save size={18} /> {saving ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+
+            {/* Developer options */}
+            <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
+              <h4 style={{ color: 'var(--danger)', marginBottom: '12px' }}>Developer Options</h4>
+              <button type="button" onClick={handleSeed} disabled={isSeeding} className="btn" style={{ background: 'var(--bg-main)', border: '1px solid var(--danger)', color: 'var(--danger)' }}>
+                {isSeeding ? 'Loading Demo Data...' : 'Load Demo Data (Testing Only)'}
               </button>
             </div>
           </form>

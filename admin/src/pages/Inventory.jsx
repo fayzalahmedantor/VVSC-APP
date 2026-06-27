@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, X, Settings as SettingsIcon, PackagePlus, History } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, addInventoryHistory, getInventoryHistory } from '../services/inventoryService';
 import { getDropdownSettings, updateDropdownSetting } from '../services/settingsService';
@@ -12,6 +13,15 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [filterLowStock, setFilterLowStock] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.filter === 'low-stock') {
+      setFilterLowStock(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   
   // Settings State
   const [dropdownSettings, setDropdownSettings] = useState({
@@ -286,6 +296,8 @@ const Inventory = () => {
   };
 
   const filteredProducts = products.filter(p => {
+    if (filterLowStock && Number(p.stock) > Number(p.minStock || 5)) return false;
+
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (p.category && p.category.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = filterCategory ? p.category === filterCategory : true;
@@ -340,6 +352,12 @@ const Inventory = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          {filterLowStock && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--danger)', color: 'white', padding: '6px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: 600 }}>
+              Low Stock Only
+              <X size={14} style={{ cursor: 'pointer' }} onClick={() => setFilterLowStock(false)} />
+            </div>
+          )}
           <select 
             value={filterCategory} 
             onChange={(e) => setFilterCategory(e.target.value)}

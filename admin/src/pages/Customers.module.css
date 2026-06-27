@@ -116,6 +116,7 @@
   vertical-align: middle;
   background: rgba(255, 255, 255, 0.5);
   transition: all 0.2s ease;
+  text-align: left;
 }
 
 :global(.dark) .table td {
@@ -169,6 +170,7 @@
 .actionBtns {
   display: flex;
   gap: 12px;
+  justify-content: flex-start;
 }
 
 .iconBtn {

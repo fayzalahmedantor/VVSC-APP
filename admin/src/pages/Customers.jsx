@@ -40,6 +40,7 @@ const Customers = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [alertFilter, setAlertFilter] = useState('');
   
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,6 +72,10 @@ const Customers = () => {
     }
     if (location.state?.resetPage) {
       setCurrentPage(1);
+    }
+    if (location.state?.filter) {
+      setAlertFilter(location.state.filter);
+      window.history.replaceState({}, document.title);
     }
   }, [location]);
 
@@ -428,6 +433,13 @@ const Customers = () => {
     const isMechanicJob = c.mechanic && c.mechanic.trim() !== '';
     if (isMechanicJob) return false;
 
+    if (alertFilter === 'due') {
+      if (!(Number(c.dueBalance || 0) > 0)) return false;
+    } else if (alertFilter === 'overdue') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (!((c.status === 'Pending' || c.status === 'Running') && c.deliveryDate && c.deliveryDate < todayStr)) return false;
+    }
+
     return (
       c.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
       c.phone?.includes(searchTerm) ||
@@ -454,6 +466,12 @@ const Customers = () => {
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           />
         </div>
+        {alertFilter && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: alertFilter === 'due' ? 'var(--warning)' : 'var(--danger)', color: alertFilter === 'due' ? '#000' : '#fff', padding: '6px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: 600 }}>
+            {alertFilter === 'due' ? 'Pending Dues Only' : 'Overdue Jobs Only'}
+            <X size={14} style={{ cursor: 'pointer' }} onClick={() => setAlertFilter('')} />
+          </div>
+        )}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button className="btn" onClick={() => setShowGlobalScanner(true)} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
             <Scan size={20} /> Scan QR
@@ -498,24 +516,31 @@ const Customers = () => {
                         <div className={styles.customerInfo} onClick={() => setHistoryCustomer(customer)} style={{ cursor: 'pointer' }} title="Click to view full profile and history">
                           <div className={styles.avatar}>{getInitials(customer.name)}</div>
                           <div>
-                            <div style={{ fontWeight: 600 }}>{customer.name}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Due: ৳{customer.dueBalance}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '15px', color: 'var(--text-main)', marginBottom: '2px' }}>{customer.name}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                              Bill: <span style={{color: 'var(--text-main)', fontWeight: 600}}>৳{customer.totalBill || 0}</span>
+                              {Number(customer.dueBalance) > 0 && (
+                                <> <span style={{color: '#ddd', margin: '0 4px'}}>|</span> Due: <span style={{color: 'var(--danger)', fontWeight: 600}}>৳{customer.dueBalance}</span></>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>{customer.phone}</span>
-                          <a 
-                            href={getWhatsAppLink(customer.phone, replaceVariables(smsSettings?.msgWhatsApp || defaultSmsSettings.msgWhatsApp, customer, shopProfile?.shopName))} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            style={{ color: '#25D366', display: 'flex', background: 'rgba(37, 211, 102, 0.1)', padding: '6px', borderRadius: '6px' }}
-                            title="Send Invoice on WhatsApp"
-                          >
-                            <MessageCircle size={18} />
-                          </a>
-                        </div>
+                      <td className={styles.phoneCell}>
+                        <a 
+                          href={getWhatsAppLink(customer.phone, replaceVariables(smsSettings?.msgWhatsApp || defaultSmsSettings.msgWhatsApp, customer, shopProfile?.shopName))} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            fontWeight: 'bold', fontSize: '14px', letterSpacing: '0.5px', 
+                            color: '#25D366', textDecoration: 'none',
+                            display: 'inline-block',
+                            background: 'rgba(37, 211, 102, 0.1)', padding: '6px 12px', borderRadius: '20px'
+                          }}
+                          title="Click to send WhatsApp message"
+                        >
+                          {customer.phone}
+                        </a>
                       </td>
                       <td>
                         <div style={{ fontWeight: 600 }}>{customer.brand} {customer.deviceType}</div>

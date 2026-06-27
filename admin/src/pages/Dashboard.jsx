@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../services/inventoryService';
 import { getCustomers, updateCustomer } from '../services/customerService';
-import { Plus, Package, Users, TrendingUp, AlertTriangle, Star, Wrench, CheckCircle, Bell, Scan } from 'lucide-react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
+import { Plus, Box, Users, Wallet, AlertCircle, Star, Wrench, CheckCircle, Bell, Scan, Clock } from 'lucide-react';
 import StatusDropdown from '../components/common/StatusDropdown';
+import CustomerHistoryModal from '../components/common/CustomerHistoryModal';
 import BarcodeScanner from '../components/common/BarcodeScanner';
 import { useAuth } from '../context/AuthContext';
 import styles from './Dashboard.module.css';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,12 +22,14 @@ const Dashboard = () => {
     dueCustomers: 0,
     todaySales: 0,
     totalIncome: 0,
+    overdueJobs: 0,
     customersList: [],
     statusStats: { pending: 0, running: 0, complete: 0, cancel: 0 },
     loading: true
   });
 
   const [showGlobalScanner, setShowGlobalScanner] = useState(false);
+  const [historyCustomer, setHistoryCustomer] = useState(null);
 
   const handleGlobalScan = (text) => {
     setShowGlobalScanner(false);
@@ -73,11 +72,16 @@ const Dashboard = () => {
         const totalIncome = customers.reduce((sum, c) => sum + Number(c.advance || 0), 0);
 
         let pending = 0, running = 0, complete = 0, cancel = 0;
+        let overdueCount = 0;
         customers.forEach(c => {
           if (c.status === 'Pending') pending++;
           else if (c.status === 'Running') running++;
           else if (c.status === 'Complete') complete++;
           else if (c.status === 'Cancel') cancel++;
+          
+          if ((c.status === 'Pending' || c.status === 'Running') && c.deliveryDate && c.deliveryDate < todayStr) {
+            overdueCount++;
+          }
         });
 
         setStats({
@@ -89,6 +93,7 @@ const Dashboard = () => {
           dueCustomers: dueCusts,
           todaySales: todaySales,
           totalIncome: totalIncome,
+          overdueJobs: overdueCount,
           customersList: customers,
           statusStats: { pending, running, complete, cancel },
           loading: false
@@ -164,13 +169,13 @@ const Dashboard = () => {
         {userRole === 'admin' && (
           <>
             {/* Main Summary */}
-            <div className={`${styles.card} ${styles.summaryCard} ${styles.gradientBlue}`} style={{ gridColumn: 'span 4', padding: '32px' }}>
+            <div className={`${styles.card} ${styles.summaryCard}`} style={{ gridColumn: 'span 4', padding: '32px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
                 <div>
-                  <h3 style={{ marginBottom: '8px', fontSize: '24px' }}>Today's Summary</h3>
-                  <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px' }}>{todayDate}</p>
-                  <div style={{ fontSize: '32px', fontWeight: 700 }}>৳{stats.loading ? '...' : stats.todaySales}</div>
-                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Today's Sales</div>
+                  <h3 style={{ marginBottom: '8px', fontSize: '24px', color: 'var(--text-main)' }}>Today's Summary</h3>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{todayDate}</p>
+                  <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--primary)' }}>৳{stats.loading ? '...' : stats.todaySales}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Today's Sales</div>
                 </div>
               </div>
             </div>
@@ -178,7 +183,7 @@ const Dashboard = () => {
             {/* Metric Card */}
             <div className={`${styles.card} ${styles.summaryCard} ${styles.pink}`} style={{ gridColumn: 'span 2' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-                <div className={styles.iconWrapper}><AlertTriangle /></div>
+                <div className={styles.iconWrapper}><Wallet /></div>
                 <div className={styles.summaryValue}>৳{stats.loading ? '...' : stats.totalDue}</div>
               </div>
               <div className={styles.summaryLabel}>Pending Dues</div>
@@ -205,9 +210,9 @@ const Dashboard = () => {
         </div>
 
         {/* Metric Card */}
-        <div className={`${styles.card} ${styles.summaryCard} ${styles.gradientPink}`} style={{ gridColumn: 'span 2' }}>
+        <div className={`${styles.card} ${styles.summaryCard} ${styles.pink}`} style={{ gridColumn: 'span 2' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-            <div className={styles.iconWrapper} style={{ background: 'rgba(255,255,255,0.2)' }}><CheckCircle /></div>
+            <div className={styles.iconWrapper}><CheckCircle /></div>
             <div className={styles.summaryValue}>{stats.loading ? '...' : (stats.statusStats?.complete || 0)}</div>
           </div>
           <div className={styles.summaryLabel}>Completed Jobs</div>
@@ -244,7 +249,13 @@ const Dashboard = () => {
                   
                   return (
                     <tr key={customer.id}>
-                      <td style={{ fontWeight: 600 }}>{customer.name}</td>
+                      <td 
+                        style={{ fontWeight: 600, cursor: 'pointer', color: 'var(--primary)' }}
+                        onClick={() => setHistoryCustomer(customer)}
+                        title="Click to view details"
+                      >
+                        {customer.name}
+                      </td>
                       <td>{customer.phone}</td>
                       <td style={{ fontWeight: 600 }}>৳{customer.totalBill || 0}</td>
                       <td>
@@ -270,44 +281,33 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className={styles.card} style={{ 
-        gridColumn: 'span 3', 
-        background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)', 
-        color: 'white', 
-        position: 'relative', 
-        overflow: 'hidden',
-        boxShadow: '0 20px 40px rgba(26, 26, 46, 0.4)'
-      }}>
-        {/* Glow Effects */}
-        <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'rgba(233, 69, 96, 0.15)', filter: 'blur(40px)', borderRadius: '50%', zIndex: 1 }}></div>
-        <div style={{ position: 'absolute', bottom: '-50px', left: '-50px', width: '150px', height: '150px', background: 'rgba(15, 52, 96, 0.3)', filter: 'blur(40px)', borderRadius: '50%', zIndex: 1 }}></div>
-
-        <div style={{ zIndex: 2, position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className={styles.card} style={{ gridColumn: 'span 3', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <h3 style={{ color: 'white', fontSize: '20px', fontWeight: 800, letterSpacing: '0.5px' }}>Quick Alerts</h3>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>System Status</p>
+            <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '0.5px' }}>Quick Alerts</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>System Status</p>
           </div>
         </div>
         
-        <div style={{ zIndex: 2, position: 'relative', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           <div 
-            onClick={() => navigate('/inventory')}
+            onClick={() => navigate('/inventory', { state: { filter: 'low-stock' } })}
             style={{ 
             display: 'flex', alignItems: 'center', gap: '16px', 
-            background: 'rgba(255, 255, 255, 0.03)', 
-            border: '1px solid rgba(255,255,255,0.05)',
-            padding: '16px', borderRadius: '16px',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease',
+            background: '#ffffff', 
+            border: '1px solid rgba(0,0,0,0.08)',
+            padding: '16px 20px', borderRadius: '16px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
             cursor: 'pointer'
-          }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateX(5px)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)' }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)' }}>
-            <div style={{ width: '40px', height: '40px', background: 'rgba(233, 69, 96, 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E94560' }}>
-              <Package size={20} />
+          }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.06)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; }}>
+            <div style={{ width: '42px', height: '42px', background: 'rgba(233, 69, 96, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E94560' }}>
+              <AlertCircle size={22} />
             </div>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>Low Stock Alert</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>Low Stock Alert</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.4' }}>
                 {stats.loading ? '...' : (
                   stats.lowStockItems > 0 
                     ? <><span style={{color: '#E94560', fontWeight: 'bold'}}>{stats.lowStockItems} items</span> need restock: <br/>{stats.lowStockNames.slice(0, 3).join(', ')}{stats.lowStockNames.length > 3 ? '...' : ''}</>
@@ -318,58 +318,114 @@ const Dashboard = () => {
           </div>
 
           <div 
-            onClick={() => navigate('/customers')}
+            onClick={() => navigate('/customers', { state: { filter: 'due' } })}
             style={{ 
             display: 'flex', alignItems: 'center', gap: '16px', 
-            background: 'rgba(255, 255, 255, 0.03)', 
-            border: '1px solid rgba(255,255,255,0.05)',
-            padding: '16px', borderRadius: '16px',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease',
+            background: '#ffffff', 
+            border: '1px solid rgba(0,0,0,0.08)',
+            padding: '16px 20px', borderRadius: '16px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
             cursor: 'pointer'
-          }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateX(5px)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)' }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)' }}>
-            <div style={{ width: '40px', height: '40px', background: 'rgba(249, 168, 38, 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F9A826' }}>
-              <AlertTriangle size={20} />
+          }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.06)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; }}>
+            <div style={{ width: '42px', height: '42px', background: 'rgba(249, 168, 38, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F9A826' }}>
+              <Wallet size={22} />
             </div>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>Pending Dues</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{stats.loading ? '...' : stats.dueCustomers} customers have dues</div>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>Pending Dues</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{stats.loading ? '...' : stats.dueCustomers} customers have dues</div>
+            </div>
+          </div>
+          
+          <div 
+            onClick={() => navigate('/customers', { state: { filter: 'overdue' } })}
+            style={{ 
+            display: 'flex', alignItems: 'center', gap: '16px', 
+            background: '#ffffff', 
+            border: '1px solid rgba(0,0,0,0.08)',
+            padding: '16px 20px', borderRadius: '16px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+            cursor: 'pointer'
+          }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.06)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; }}>
+            <div style={{ width: '42px', height: '42px', background: 'rgba(211, 47, 47, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f' }}>
+              <Clock size={22} />
+            </div>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>Overdue Jobs</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                {stats.loading ? '...' : (
+                  stats.overdueJobs > 0 
+                    ? <><span style={{color: '#d32f2f', fontWeight: 'bold'}}>{stats.overdueJobs} devices</span> are past delivery date</>
+                    : 'All jobs are on track'
+                )}
+              </div>
             </div>
           </div>
           
         </div>
       </div>
 
-      <div className={styles.card} style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <h3 style={{ alignSelf: 'flex-start' }}>Job Status</h3>
-        <div style={{ position: 'relative', width: '200px', height: '200px', marginTop: '24px' }}>
-          <Doughnut data={chartData} options={chartOptions} />
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 700 }}>{completePercentage}%</div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Complete</div>
+      <div className={styles.card} style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column' }}>
+        <h3 style={{ alignSelf: 'flex-start', marginBottom: '16px' }}>Job Status</h3>
+        
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, justifyContent: 'center' }}>
+          
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>
+              <span style={{ color: '#F7941D' }}>Pending</span>
+              <span>{stats.statusStats.pending}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(247, 148, 29, 0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: '#F7941D', width: `${totalChartValue > 0 ? (stats.statusStats.pending / totalChartValue) * 100 : 0}%`, borderRadius: '4px', transition: 'width 1s ease' }}></div>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%', marginTop: '32px', fontSize: '13px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F7941D' }}></span> Pending</span>
-            <strong>{stats.statusStats.pending}</strong>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>
+              <span style={{ color: '#1976d2' }}>Running</span>
+              <span>{stats.statusStats.running}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(25, 118, 210, 0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: '#1976d2', width: `${totalChartValue > 0 ? (stats.statusStats.running / totalChartValue) * 100 : 0}%`, borderRadius: '4px', transition: 'width 1s ease' }}></div>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1976d2' }}></span> Running</span>
-            <strong>{stats.statusStats.running}</strong>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>
+              <span style={{ color: '#4CAF50' }}>Complete</span>
+              <span>{stats.statusStats.complete}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(76, 175, 80, 0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: '#4CAF50', width: `${totalChartValue > 0 ? (stats.statusStats.complete / totalChartValue) * 100 : 0}%`, borderRadius: '4px', transition: 'width 1s ease' }}></div>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4CAF50' }}></span> Complete</span>
-            <strong>{stats.statusStats.complete}</strong>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>
+              <span style={{ color: '#d32f2f' }}>Cancel</span>
+              <span>{stats.statusStats.cancel}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(211, 47, 47, 0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: '#d32f2f', width: `${totalChartValue > 0 ? (stats.statusStats.cancel / totalChartValue) * 100 : 0}%`, borderRadius: '4px', transition: 'width 1s ease' }}></div>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d32f2f' }}></span> Cancel</span>
-            <strong>{stats.statusStats.cancel}</strong>
-          </div>
+
         </div>
       </div>
 
       </div>
+      
+      <CustomerHistoryModal 
+        isOpen={!!historyCustomer}
+        selectedCustomer={historyCustomer}
+        allCustomers={stats.customersList || []}
+        onClose={() => setHistoryCustomer(null)}
+        onOpenEdit={(job, customerToPrefill) => {
+          setHistoryCustomer(null);
+          navigate('/customers', { state: { scannedId: job?.id || customerToPrefill?.id, openAddModal: !job }});
+        }}
+      />
     </div>
   );
 };
