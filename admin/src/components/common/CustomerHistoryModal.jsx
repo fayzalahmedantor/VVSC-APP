@@ -63,6 +63,15 @@ const CustomerHistoryModal = ({ isOpen, onClose, selectedCustomer, allCustomers,
                   <span className={`${styles.statusBadge} ${styles[job.status?.toLowerCase().replace(/\s/g, '')] || ''}`}>
                     {job.status}
                   </span>
+                  
+                  {job.warranty && job.warranty !== 'None' && job.warrantyExpiry && (
+                    <div className={`${styles.warrantyBadge} ${new Date(job.warrantyExpiry) >= new Date() ? styles.warrantyActive : styles.warrantyExpired}`}>
+                      {new Date(job.warrantyExpiry) >= new Date() 
+                        ? `Under Warranty (Expires: ${new Date(job.warrantyExpiry).toLocaleDateString()})` 
+                        : 'Warranty Expired'}
+                    </div>
+                  )}
+
                   <div className={styles.costInfo}>
                     <span>Bill: ৳{job.totalBill || job.estCost || 0}</span>
                     {parseFloat(job.dueBalance) > 0 && (

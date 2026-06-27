@@ -73,6 +73,17 @@ const Customers = () => {
   }, [location]);
 
   useEffect(() => {
+    if (customers.length > 0 && location.state?.scannedId) {
+      const scannedId = location.state.scannedId;
+      const foundCustomer = customers.find(c => c.id === scannedId);
+      if (foundCustomer) {
+        setHistoryCustomer(foundCustomer);
+      }
+      window.history.replaceState({}, document.title);
+    }
+  }, [customers, location.state]);
+
+  useEffect(() => {
     fetchCustomers();
     fetchDropdowns();
     fetchShopProfile();
@@ -159,6 +170,7 @@ const Customers = () => {
   const [historyCustomer, setHistoryCustomer] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showGlobalScanner, setShowGlobalScanner] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -213,6 +225,22 @@ const Customers = () => {
       });
     }
     setIsModalOpen(true);
+  };
+
+  const handleGlobalScan = (text) => {
+    setShowGlobalScanner(false);
+    let scannedId = text;
+    if (text.includes('/track/')) {
+      const parts = text.split('/track/');
+      scannedId = parts[parts.length - 1];
+    }
+    
+    const foundCustomer = customers.find(c => c.id === scannedId);
+    if (foundCustomer) {
+      setHistoryCustomer(foundCustomer);
+    } else {
+      alert("Customer record not found for this QR code.");
+    }
   };
 
   const handleCloseModal = () => {
@@ -422,10 +450,23 @@ const Customers = () => {
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           />
         </div>
-        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-          <Plus size={20} /> Add Customer
-        </button>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <button className="btn" onClick={() => setShowGlobalScanner(true)} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
+            <Scan size={20} /> Scan QR
+          </button>
+          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+            <Plus size={20} /> Add Customer
+          </button>
+        </div>
       </div>
+
+      {showGlobalScanner && (
+        <div className={styles.modalOverlay} style={{ zIndex: 2000 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '400px' }}>
+            <BarcodeScanner onScan={handleGlobalScan} onClose={() => setShowGlobalScanner(false)} />
+          </div>
+        </div>
+      )}
 
       <div className={styles.card}>
         {loading ? (
@@ -908,6 +949,14 @@ const Customers = () => {
           customer={customerToLabel} 
           shopProfile={shopProfile} 
           onClose={() => setCustomerToLabel(null)} 
+        />
+      )}
+
+      {/* Global Barcode Scanner */}
+      {showGlobalScanner && (
+        <BarcodeScanner 
+          onScan={handleGlobalScan} 
+          onClose={() => setShowGlobalScanner(false)} 
         />
       )}
 

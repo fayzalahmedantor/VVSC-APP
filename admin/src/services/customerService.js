@@ -13,6 +13,20 @@ import { db } from './firebase';
 
 const COLLECTION_NAME = 'customers';
 
+const calculateWarrantyExpiry = (deliveryDate, warrantyStr) => {
+  if (!warrantyStr || warrantyStr === 'None') return null;
+  const baseDate = deliveryDate ? new Date(deliveryDate) : new Date();
+  
+  if (warrantyStr === '7 Days') baseDate.setDate(baseDate.getDate() + 7);
+  else if (warrantyStr === '15 Days') baseDate.setDate(baseDate.getDate() + 15);
+  else if (warrantyStr === '1 Month') baseDate.setMonth(baseDate.getMonth() + 1);
+  else if (warrantyStr === '3 Months') baseDate.setMonth(baseDate.getMonth() + 3);
+  else if (warrantyStr === '6 Months') baseDate.setMonth(baseDate.getMonth() + 6);
+  else if (warrantyStr === '1 Year') baseDate.setFullYear(baseDate.getFullYear() + 1);
+  
+  return baseDate.toISOString();
+};
+
 // Get all customers
 export const getCustomers = async () => {
   try {
@@ -44,6 +58,7 @@ export const addCustomer = async (customerData) => {
       ...customerData,
       dueBalance: Number(customerData.dueBalance || 0),
       loyaltyPoints: Number(customerData.loyaltyPoints || 0),
+      warrantyExpiry: calculateWarrantyExpiry(customerData.deliveryDate, customerData.warranty),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
@@ -62,6 +77,7 @@ export const updateCustomer = async (id, customerData) => {
       ...customerData, 
       dueBalance: Number(customerData.dueBalance || 0),
       loyaltyPoints: Number(customerData.loyaltyPoints || 0),
+      warrantyExpiry: calculateWarrantyExpiry(customerData.deliveryDate, customerData.warranty),
       updatedAt: new Date().toISOString() 
     };
 

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../services/inventoryService';
 import { getCustomers, updateCustomer } from '../services/customerService';
-import { Plus, Package, Users, TrendingUp, AlertTriangle, Star, Wrench, CheckCircle, Bell } from 'lucide-react';
+import { Plus, Package, Users, TrendingUp, AlertTriangle, Star, Wrench, CheckCircle, Bell, Scan } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import StatusDropdown from '../components/common/StatusDropdown';
+import BarcodeScanner from '../components/common/BarcodeScanner';
 import { useAuth } from '../context/AuthContext';
 import styles from './Dashboard.module.css';
 
@@ -28,6 +29,18 @@ const Dashboard = () => {
     statusStats: { pending: 0, running: 0, complete: 0, cancel: 0 },
     loading: true
   });
+
+  const [showGlobalScanner, setShowGlobalScanner] = useState(false);
+
+  const handleGlobalScan = (text) => {
+    setShowGlobalScanner(false);
+    let scannedId = text;
+    if (text.includes('/track/')) {
+      const parts = text.split('/track/');
+      scannedId = parts[parts.length - 1];
+    }
+    navigate('/customers', { state: { scannedId } });
+  };
 
   const todayDate = new Date().toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -143,6 +156,36 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 'calc(100vh - 120px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button 
+          onClick={() => setShowGlobalScanner(true)} 
+          style={{
+            background: 'var(--bg-card)',
+            color: 'var(--text-main)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            padding: '10px 20px',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '14px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Scan size={18} /> Scan QR
+        </button>
+      </div>
+
+      {showGlobalScanner && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
+            <BarcodeScanner onScan={handleGlobalScan} onClose={() => setShowGlobalScanner(false)} />
+          </div>
+        </div>
+      )}
+
       <div className={styles.dashboardGrid}>
       
       {/* Row 1: Summary Cards */}
