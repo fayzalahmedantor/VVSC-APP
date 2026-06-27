@@ -86,9 +86,6 @@ const Due = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Due Collection</h1>
-      </div>
 
       <div className={styles.card}>
         <div className={styles.searchBox}>

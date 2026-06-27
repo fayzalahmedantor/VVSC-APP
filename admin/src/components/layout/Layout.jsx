@@ -26,7 +26,7 @@ const Layout = () => {
       <main className={styles.mainContent}>
         <Topbar toggleTheme={toggleTheme} isDark={isDark} openSearch={() => setIsSearchOpen(true)} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         <div className={styles.contentArea}>
-          <Outlet />
+          <Outlet context={{ isDark, toggleTheme }} />
         </div>
       </main>
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

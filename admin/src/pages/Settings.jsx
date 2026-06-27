@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile } from '../services/settingsService';
 import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
-import { UserPlus, Trash2, Save } from 'lucide-react';
+import { UserPlus, Trash2, Save, Store, Palette, FileText, Users } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
 const Settings = () => {
+  const { isDark, toggleTheme } = useOutletContext();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [activeTab, setActiveTab] = useState('general');
   
   const [profile, setProfile] = useState({
     shopName: '',
@@ -98,7 +101,7 @@ const Settings = () => {
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 1024 * 1024) { // 1MB limit
+      if (file.size > 1024 * 1024) {
         alert("Image size should be less than 1MB");
         return;
       }
@@ -119,179 +122,188 @@ const Settings = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h2>Shop Settings & Staff</h2>
+
+      <div className={styles.tabsContainer}>
+        <button className={`${styles.tabBtn} ${activeTab === 'general' ? styles.active : ''}`} onClick={() => setActiveTab('general')}>
+          <Store size={18} /> Shop Profile
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'appearance' ? styles.active : ''}`} onClick={() => setActiveTab('appearance')}>
+          <Palette size={18} /> Appearance
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'receipts' ? styles.active : ''}`} onClick={() => setActiveTab('receipts')}>
+          <FileText size={18} /> Receipts
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'staff' ? styles.active : ''}`} onClick={() => setActiveTab('staff')}>
+          <Users size={18} /> Staff
+        </button>
       </div>
 
-      <div className={styles.layoutGrid}>
-        {/* Left Column: Settings */}
-        <div className={styles.card}>
-          <form onSubmit={handleSubmit}>
-            <h3 style={{ marginTop: 0 }}>Basic Information</h3>
-
+      <div className={styles.card}>
+        
+        {/* TAB 1: GENERAL INFO */}
+        {activeTab === 'general' && (
+          <form onSubmit={handleSubmit} className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Shop Profile</h3>
+            
             <div className={styles.formGroup}>
               <label>Shop Logo</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '80px', height: '80px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px dashed rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ width: '80px', height: '80px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px dashed rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {profile.logo ? (
                     <img src={profile.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : (
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No Logo</span>
                   )}
                 </div>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleLogoUpload}
-                  style={{ flex: 1 }}
-                />
+                <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ flex: 1 }} />
               </div>
               <small style={{ color: 'var(--text-muted)' }}>Max file size: 1MB. Recommended format: PNG with transparent background.</small>
             </div>
             
             <div className={styles.formGroup}>
               <label>Shop Name</label>
-              <input 
-                type="text" 
-                name="shopName" 
-                value={profile.shopName || ''} 
-                onChange={handleChange} 
-                required
-                placeholder="e.g., WSC Mobile Repair"
-              />
+              <input type="text" name="shopName" value={profile.shopName || ''} onChange={handleChange} required placeholder="e.g., WSC Mobile Repair" />
             </div>
 
             <div className={styles.formGroup}>
               <label>Owner Name</label>
-              <input 
-                type="text" 
-                name="ownerName" 
-                value={profile.ownerName || ''} 
-                onChange={handleChange} 
-                placeholder="e.g., Admin"
-              />
+              <input type="text" name="ownerName" value={profile.ownerName || ''} onChange={handleChange} placeholder="e.g., Admin" />
             </div>
 
             <div className={styles.formGroup}>
               <label>Contact Phone</label>
-              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-card, #fff)' }}>
-                <span style={{ padding: '0 12px', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-muted, #64748b)', borderRight: '1px solid var(--border-color, #e2e8f0)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
-                <input 
-                  required 
-                  type="tel" 
-                  name="phone"
-                  value={profile.phone} 
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    if (val.length <= 11) handleChange({ target: { name: 'phone', value: val } });
-                  }} 
-                  placeholder="01XXXXXXXXX" 
-                  style={{ border: 'none', margin: 0, width: '100%', padding: '12px', outline: 'none', background: 'transparent', color: 'var(--text-main, #1e293b)' }}
-                />
+              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
+                <span style={{ padding: '0 12px', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', borderRight: '1px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
+                <input required type="tel" name="phone" value={profile.phone} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 11) handleChange({ target: { name: 'phone', value: val } }); }} placeholder="01XXXXXXXXX" style={{ border: 'none', margin: 0, width: '100%', padding: '12px', outline: 'none', background: 'transparent', color: 'var(--text-main)' }} />
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <label>Shop Address</label>
-              <textarea 
-                name="address" 
-                value={profile.address || ''} 
-                onChange={handleChange} 
-                rows="3"
-                placeholder="Full address to display on receipts"
-              />
-            </div>
-
-            <h3 style={{ marginTop: '32px' }}>Receipt / Memo Configuration</h3>
-
-            <div className={styles.formGroup}>
-              <label>Footer Message</label>
-              <textarea 
-                name="receiptFooter" 
-                value={profile.receiptFooter || ''} 
-                onChange={handleChange} 
-                rows="2"
-                placeholder="e.g., Thank you for your business! No warranty on physical damage."
-              />
+              <textarea name="address" value={profile.address || ''} onChange={handleChange} rows="3" placeholder="Full address to display on receipts" />
             </div>
 
             <div className={styles.actions}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
-                <Save size={18} /> {saving ? 'Saving...' : 'Save Shop Settings'}
+                <Save size={18} /> {saving ? 'Saving...' : 'Save Profile'}
               </button>
             </div>
           </form>
-        </div>
+        )}
 
-        {/* Right Column: Staff Accounts */}
-        <div className={styles.card}>
-          <h3 style={{ marginTop: 0 }}>Staff Accounts</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>Create separate accounts for your employees. They will only have access to Customer & Inventory pages.</p>
-          
-          <form onSubmit={handleAddStaff} style={{ marginBottom: '32px', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}>
-            <h4 style={{ marginTop: 0, marginBottom: '12px' }}>Create New Account</h4>
-            <div className={styles.formGroup}>
-              <label>Staff Name</label>
-              <input 
-                type="text" 
-                required 
-                value={newEmployee.name} 
-                onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})} 
-                placeholder="e.g., Rahim" 
-              />
+        {/* TAB 2: APPEARANCE */}
+        {activeTab === 'appearance' && (
+          <div className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Theme & Appearance</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>Customize how the system looks and feels.</p>
+
+            <div className={styles.formGroup} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-main)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div>
+                <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--text-main)', fontSize: '16px' }}>Dark Mode</strong>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Switch the entire system interface to a darker theme.</span>
+              </div>
+              <button 
+                type="button"
+                onClick={toggleTheme} 
+                style={{
+                  background: isDark ? 'var(--primary-color)' : '#cbd5e1',
+                  border: 'none',
+                  borderRadius: '30px',
+                  width: '60px',
+                  height: '32px',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  transition: 'background 0.3s'
+                }}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: '4px',
+                  left: isDark ? '32px' : '4px',
+                  width: '24px',
+                  height: '24px',
+                  background: '#fff',
+                  borderRadius: '50%',
+                  transition: 'left 0.3s',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
+                }}></div>
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* TAB 3: RECEIPTS */}
+        {activeTab === 'receipts' && (
+          <form onSubmit={handleSubmit} className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Receipt Configuration</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>These settings will be applied to all customer invoices and printed labels.</p>
+
             <div className={styles.formGroup}>
-              <label>Email ID</label>
-              <input 
-                type="email" 
-                required 
-                value={newEmployee.email} 
-                onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})} 
-                placeholder="staff@example.com" 
-              />
+              <label>Footer Message (Terms & Conditions)</label>
+              <textarea name="receiptFooter" value={profile.receiptFooter || ''} onChange={handleChange} rows="4" placeholder="e.g., Thank you for your business! No warranty on physical damage." />
             </div>
-            <div className={styles.formGroup}>
-              <label>Password (Min 6 chars)</label>
-              <input 
-                type="password" 
-                required 
-                value={newEmployee.password} 
-                onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})} 
-                placeholder="••••••••" 
-                minLength="6"
-              />
+
+            <div className={styles.actions}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                <Save size={18} /> {saving ? 'Saving...' : 'Save Configuration'}
+              </button>
             </div>
-            <button type="submit" className="btn btn-primary" disabled={addingStaff} style={{ width: '100%', marginTop: '8px' }}>
-              <UserPlus size={18} /> {addingStaff ? 'Creating...' : 'Create Account'}
-            </button>
           </form>
+        )}
 
-          <h4 style={{ marginBottom: '12px' }}>Active Staff</h4>
-          {employees.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-main)', borderRadius: '8px' }}>
-              No staff accounts created yet.
+        {/* TAB 4: STAFF */}
+        {activeTab === 'staff' && (
+          <div className={styles.tabPane}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0 }}>Staff Accounts</h3>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {employees.map(emp => (
-                <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <div>
-                    <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{emp.name}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{emp.email}</div>
-                  </div>
-                  <button 
-                    onClick={() => handleDeleteStaff(emp.id)}
-                    className={styles.iconBtn} 
-                    style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}
-                    title="Delete Account"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+            
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Create separate accounts for your employees. They will only have access to Customer & Inventory pages, keeping settings and reports hidden.</p>
+            
+            <form onSubmit={handleAddStaff} style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '16px' }}>Create New Account</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label>Staff Name</label>
+                  <input type="text" required value={newEmployee.name} onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})} placeholder="e.g., Rahim" />
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label>Email ID</label>
+                  <input type="email" required value={newEmployee.email} onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})} placeholder="staff@example.com" />
+                </div>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label>Password (Min 6 chars)</label>
+                  <input type="password" required value={newEmployee.password} onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})} placeholder="••••••••" minLength="6" />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={addingStaff} style={{ width: '100%' }}>
+                <UserPlus size={18} /> {addingStaff ? 'Creating...' : 'Create Account'}
+              </button>
+            </form>
+
+            <h4 style={{ marginBottom: '16px' }}>Active Staff</h4>
+            {employees.length === 0 ? (
+              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-main)', borderRadius: '12px', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                No staff accounts created yet.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                {employees.map(emp => (
+                  <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div>
+                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>{emp.name}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{emp.email}</div>
+                    </div>
+                    <button onClick={() => handleDeleteStaff(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Delete Account">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
       
       <ConfirmModal

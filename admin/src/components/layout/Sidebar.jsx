@@ -91,10 +91,6 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
             <NavLink onClick={closeSidebar} to="/sms-settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
               <MessageSquare size={20} /> <span>SMS Settings</span>
             </NavLink>
-
-            <NavLink onClick={closeSidebar} to="/marketing" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-              <Megaphone size={20} /> <span>Marketing</span>
-            </NavLink>
           </>
         )}
       </nav>

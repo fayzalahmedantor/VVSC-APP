@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Bell, Search, UserPlus, Menu } from 'lucide-react';
+import { Moon, Sun, Bell, Search, UserPlus, Menu, Scan } from 'lucide-react';
 import { getCustomers } from '../../services/customerService';
+import BarcodeScanner from '../common/BarcodeScanner';
 import styles from './Layout.module.css';
 
 const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
@@ -10,7 +11,18 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
   
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const notifRef = useRef(null);
+
+  const handleScan = (text) => {
+    setShowScanner(false);
+    let scannedId = text;
+    if (text.includes('/track/')) {
+      const parts = text.split('/track/');
+      scannedId = parts[parts.length - 1];
+    }
+    navigate('/customers', { state: { scannedId } });
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -69,14 +81,14 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
       </div>
       
       <div className={styles.topbarRight}>
+        {/* QR Scanner */}
+        <button className={styles.iconBtn} onClick={() => setShowScanner(true)} title="Scan QR Code">
+          <Scan size={20} />
+        </button>
+
         {/* Add Customer */}
         <button className={styles.iconBtn} onClick={() => navigate('/customers', { state: { openAddModal: true } })} title="Add Customer">
           <UserPlus size={20} />
-        </button>
-
-        {/* Theme Toggle */}
-        <button className={styles.iconBtn} onClick={toggleTheme} title="Toggle Theme">
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
         </button>
         
         {/* Notifications */}
@@ -123,6 +135,14 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
           <Search size={20} />
         </button>
       </div>
+
+      {showScanner && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
+            <BarcodeScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

@@ -172,11 +172,7 @@ const Expenses = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div>
-          <h2>Daily Expenses</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Track all your shop expenditures</p>
-        </div>
+      <div className={styles.header} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <button className="btn btn-primary" onClick={() => handleOpenModal()}>
           <Plus size={20} /> Add Expense
         </button>

@@ -156,36 +156,6 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 'calc(100vh - 120px)' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <button 
-          onClick={() => setShowGlobalScanner(true)} 
-          style={{
-            background: 'var(--bg-card)',
-            color: 'var(--text-main)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '8px',
-            padding: '10px 20px',
-            display: 'flex',
-            gap: '8px',
-            alignItems: 'center',
-            cursor: 'pointer',
-            fontWeight: 600,
-            fontSize: '14px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          <Scan size={18} /> Scan QR
-        </button>
-      </div>
-
-      {showGlobalScanner && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
-            <BarcodeScanner onScan={handleGlobalScan} onClose={() => setShowGlobalScanner(false)} />
-          </div>
-        </div>
-      )}
-
       <div className={styles.dashboardGrid}>
       
       {/* Row 1: Summary Cards */}

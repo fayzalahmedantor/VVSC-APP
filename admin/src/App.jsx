@@ -13,7 +13,6 @@ import Settings from './pages/Settings';
 import SmsSettings from './pages/SmsSettings';
 import Expenses from './pages/Expenses';
 import Loyalty from './pages/Loyalty';
-import Marketing from './pages/Marketing';
 import Track from './pages/Track';
 import PrivateRoute from './components/layout/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -38,7 +37,6 @@ function App() {
             <Route path="report" element={<PrivateRoute adminOnly={true}><Report /></PrivateRoute>} />
             <Route path="settings" element={<PrivateRoute adminOnly={true}><Settings /></PrivateRoute>} />
             <Route path="sms-settings" element={<PrivateRoute adminOnly={true}><SmsSettings /></PrivateRoute>} />
-            <Route path="marketing" element={<PrivateRoute adminOnly={true}><Marketing /></PrivateRoute>} />
           </Route>
         </Routes>
         <ReloadPrompt />

@@ -103,11 +103,7 @@ const Loyalty = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div>
-          <h2>Customer Loyalty</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Reward your best customers with points</p>
-        </div>
+      <div className={styles.header} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <div className={styles.searchBar}>
           <Search size={20} color="var(--text-muted)" />
           <input 

@@ -216,13 +216,11 @@ const Report = () => {
         <h1>{shopProfile?.shopName || 'Shop Name'}</h1>
         <p>{shopProfile?.address || 'Shop Address'}</p>
         <p>{shopProfile?.phone || 'Phone Number'}</p>
-        <h2 style={{marginTop: '16px', borderBottom: '1px solid #000', paddingBottom: '4px'}}>Financial Report</h2>
         <p style={{fontStyle: 'italic', marginTop: '8px'}}>Generated on: {new Date().toLocaleString()}</p>
         <p style={{fontWeight: 'bold', marginTop: '4px'}}>Report Period: {filterType.toUpperCase()}</p>
       </div>
 
-      <div className={styles.header}>
-        <h2>Financial Report</h2>
+      <div className={styles.header} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <div className={styles.filters}>
           <select 
             className="btn" 
