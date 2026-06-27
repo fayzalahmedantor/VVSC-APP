@@ -182,16 +182,16 @@ const Report = () => {
         fill: true,
         label: 'Income (৳)',
         data: sortedDates.length > 0 ? sortedDates.map(d => chartDates[d].income) : [0],
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderColor: '#00D4AA',
+        backgroundColor: 'rgba(0, 212, 170, 0.1)',
         tension: 0.4
       },
       {
         fill: true,
         label: 'Expense (৳)',
         data: sortedDates.length > 0 ? sortedDates.map(d => chartDates[d].expense) : [0],
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderColor: '#FF6B9E',
+        backgroundColor: 'rgba(255, 107, 158, 0.1)',
         tension: 0.4
       }
     ]
@@ -245,7 +245,7 @@ const Report = () => {
           )}
 
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn" onClick={handleExportCSV} style={{ background: '#10b981', color: '#fff', border: 'none' }}>
+            <button className="btn" onClick={handleExportCSV} style={{ background: 'var(--accent-teal)', color: '#fff', border: 'none' }}>
               <Download size={18} /> Excel (CSV)
             </button>
             <button className="btn btn-primary" onClick={() => window.print()}>
@@ -315,8 +315,8 @@ const Report = () => {
                     <td style={{ fontWeight: 500 }}>{t.name}</td>
                     <td>
                       <span className="badge" style={{ 
-                        background: t.type === 'Income' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                        color: t.type === 'Income' ? '#10B981' : '#EF4444'
+                        background: t.type === 'Income' ? 'rgba(0,212,170,0.1)' : 'rgba(255,107,158,0.1)',
+                        color: t.type === 'Income' ? 'var(--accent-teal)' : 'var(--accent-pink)'
                       }}>
                         {t.type}
                       </span>

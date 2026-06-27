@@ -11,7 +11,7 @@ const SmsSettings = () => {
   
   const [smsSettings, setSmsSettings] = useState({
     apiUrl: '', apiKey: '', senderId: '',
-    msgReceived: '', msgReady: '', msgDelivered: '', msgCancelled: ''
+    msgReceived: '', msgReady: '', msgDelivered: '', msgCancelled: '', msgWhatsApp: ''
   });
 
   const [customers, setCustomers] = useState([]);
@@ -72,7 +72,8 @@ const SmsSettings = () => {
         msgReceived: defaultSmsSettings.msgReceived,
         msgReady: defaultSmsSettings.msgReady,
         msgDelivered: defaultSmsSettings.msgDelivered,
-        msgCancelled: defaultSmsSettings.msgCancelled
+        msgCancelled: defaultSmsSettings.msgCancelled,
+        msgWhatsApp: defaultSmsSettings.msgWhatsApp
       });
     }
   };
@@ -204,8 +205,9 @@ const SmsSettings = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Canceled Template</label>
-              <textarea name="msgCancelled" value={smsSettings.msgCancelled || ''} onChange={handleSmsChange} rows="3" />
+              <label>WhatsApp Invoice Template</label>
+              <textarea name="msgWhatsApp" value={smsSettings.msgWhatsApp || ''} onChange={handleSmsChange} rows="5" />
+              <small style={{ color: 'var(--text-muted)' }}>Use {"{ShopName}"} and {"{Status}"} along with other variables.</small>
             </div>
 
             <div className={styles.actions} style={{ display: 'flex', gap: '12px' }}>

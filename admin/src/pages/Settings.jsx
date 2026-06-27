@@ -162,7 +162,7 @@ const Settings = () => {
             
             <div className={styles.formGroup}>
               <label>Shop Name</label>
-              <input type="text" name="shopName" value={profile.shopName || ''} onChange={handleChange} required placeholder="e.g., WSC Mobile Repair" />
+              <input type="text" name="shopName" value={profile.shopName || ''} onChange={handleChange} required placeholder="e.g., WSC Electronics Repair" />
             </div>
 
             <div className={styles.formGroup}>

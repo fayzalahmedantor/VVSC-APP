@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer, MessageCircle, Tag } from 'lucide-react';
 import { getCustomers, addCustomer, updateCustomer, deleteCustomer } from '../services/customerService';
 import { getProducts, updateProduct, addInventoryHistory } from '../services/inventoryService';
-import { triggerAutomation } from '../services/messagingService';
+import { triggerAutomation, getSmsSettings, replaceVariables, defaultSmsSettings } from '../services/messagingService';
 import { getDropdownSettings, updateDropdownSetting, getShopProfile } from '../services/settingsService';
 import { getMechanics } from '../services/mechanicService';
 import { db } from '../services/firebase';
@@ -16,7 +16,7 @@ import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
 import styles from './Customers.module.css';
 
-const getWhatsAppLink = (phone) => {
+const getWhatsAppLink = (phone, message = '') => {
   if (!phone) return '#';
   let number = phone.replace(/[^0-9]/g, '');
   
@@ -25,8 +25,9 @@ const getWhatsAppLink = (phone) => {
     number = '88' + number;
   }
   
+  const encodedMsg = encodeURIComponent(message);
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  return isMobile ? `https://wa.me/${number}` : `https://web.whatsapp.com/send/?phone=${number}`;
+  return isMobile ? `https://wa.me/${number}?text=${encodedMsg}` : `https://web.whatsapp.com/send/?phone=${number}&text=${encodedMsg}`;
 };
 
 const Customers = () => {
@@ -47,6 +48,7 @@ const Customers = () => {
   // Print & Shop State
   const [shopProfile, setShopProfile] = useState(null);
   const [customerToPrint, setCustomerToPrint] = useState(null);
+  const [smsSettings, setSmsSettings] = useState(null);
 
   // Delivery Modal State
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
@@ -100,6 +102,8 @@ const Customers = () => {
   const fetchShopProfile = async () => {
     const profile = await getShopProfile();
     setShopProfile(profile);
+    const sms = await getSmsSettings();
+    setSmsSettings(sms);
   };
 
   const fetchDropdowns = async () => {
@@ -503,11 +507,11 @@ const Customers = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{customer.phone}</span>
                           <a 
-                            href={getWhatsAppLink(customer.phone)} 
+                            href={getWhatsAppLink(customer.phone, replaceVariables(smsSettings?.msgWhatsApp || defaultSmsSettings.msgWhatsApp, customer, shopProfile?.shopName))} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            style={{ color: '#25D366', display: 'flex' }}
-                            title="Message on WhatsApp"
+                            style={{ color: '#25D366', display: 'flex', background: 'rgba(37, 211, 102, 0.1)', padding: '6px', borderRadius: '6px' }}
+                            title="Send Invoice on WhatsApp"
                           >
                             <MessageCircle size={18} />
                           </a>

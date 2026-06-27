@@ -10,7 +10,8 @@ export const defaultSmsSettings = {
   msgReceived: 'আসসালামু আলাইকুম {CustomerName}, আপনার {DeviceType} টি আমরা যত্ন সহকারে মেরামতের জন্য গ্রহণ করেছি। এর আনুমানিক খরচ হতে পারে {TotalBill} টাকা। ডিভাইসের বর্তমান অবস্থা জানতে এই লিংকে ক্লিক করুন: {TrackingLink} । আমাদের উপর আস্থা রাখার জন্য অনেক ধন্যবাদ!',
   msgReady: 'হ্যালো {CustomerName}, আনন্দের সাথে জানাচ্ছি যে আপনার {DeviceType} টি সফলভাবে ঠিক করা হয়েছে! বকেয়া {DueBalance} টাকা পরিশোধ করে আপনার সুবিধামতো সময়ে ডিভাইসটি নিয়ে যেতে পারেন। বিস্তারিত: {TrackingLink} । যেকোনো প্রয়োজনে আমাদের কল করতে পারেন।',
   msgDelivered: 'প্রিয় {CustomerName}, আপনার {DeviceType} টি আজ আপনাকে বুঝিয়ে দেওয়া হয়েছে (মোট জমা: {TotalPaid} টাকা)। আমাদের সার্ভিস নেওয়ার জন্য আপনাকে অসংখ্য ধন্যবাদ। ডিভাইসটি ব্যবহার করতে গিয়ে কোনো সমস্যা মনে হলে অবশ্যই আমাদের জানাবেন। ভালো থাকবেন!',
-  msgCancelled: 'প্রিয় {CustomerName}, আমরা আন্তরিকভাবে দুঃখিত! কিছু যান্ত্রিক বা পার্টস সমস্যার কারণে আপনার {DeviceType} টি মেরামত করা সম্ভব হয়নি। অনুগ্রহ করে সময় করে ডিভাইসটি আমাদের শপ থেকে নিয়ে যাবেন। আপনার সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।'
+  msgCancelled: 'প্রিয় {CustomerName}, আমরা আন্তরিকভাবে দুঃখিত! কিছু যান্ত্রিক বা পার্টস সমস্যার কারণে আপনার {DeviceType} টি মেরামত করা সম্ভব হয়নি। অনুগ্রহ করে সময় করে ডিভাইসটি আমাদের শপ থেকে নিয়ে যাবেন। আপনার সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।',
+  msgWhatsApp: '*{ShopName}*\n\nHello {CustomerName},\nHere is your repair summary:\n\n*Device:* {DeviceType}\n*Issue:* {Problem}\n*Total Bill:* ৳{TotalBill}\n*Paid:* ৳{TotalPaid}\n*Due Balance:* ৳{DueBalance}\n*Status:* {Status}\n\nThank you!'
 };
 
 export const getSmsSettings = async () => {
@@ -40,17 +41,19 @@ export const updateSmsSettings = async (settings) => {
   }
 };
 
-const replaceVariables = (template, customer) => {
+export const replaceVariables = (template, customer, shopName = 'Repair Shop') => {
   if (!template) return '';
   const trackingLink = `${window.location.origin}/track/${customer.id}`;
 
   return template
+    .replace(/{ShopName}/g, shopName)
     .replace(/{CustomerName}/g, customer.name || '')
     .replace(/{DeviceType}/g, `${customer.brand || ''} ${customer.deviceType || ''}`.trim())
     .replace(/{Problem}/g, customer.issue || '')
     .replace(/{TotalBill}/g, customer.estCost || customer.totalBill || '0')
     .replace(/{DueBalance}/g, customer.dueBalance || '0')
     .replace(/{TotalPaid}/g, customer.advance || '0')
+    .replace(/{Status}/g, customer.status || 'Received')
     .replace(/{TrackingLink}/g, trackingLink);
 };
 

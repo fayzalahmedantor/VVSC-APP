@@ -77,15 +77,15 @@
 }
 
 .incomeBox {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--accent-teal) 0%, #00A685 100%);
 }
 
 .expenseBox {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background: linear-gradient(135deg, var(--accent-pink) 0%, #E65084 100%);
 }
 
 .profitBox {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
 }
 
 .chartContainer {
@@ -131,12 +131,12 @@
 }
 
 .transactionIncome {
-  color: #10B981;
+  color: var(--accent-teal);
   font-weight: bold;
 }
 
 .transactionExpense {
-  color: #EF4444;
+  color: var(--accent-pink);
   font-weight: bold;
 }
 
@@ -214,18 +214,18 @@
 
   /* Modify gradients for print so text is legible */
   .incomeBox {
-    background: #e6f8f0 !important;
-    border-left: 5px solid #10B981;
+    background: #e6fffa !important;
+    border-left: 5px solid var(--accent-teal);
   }
   
   .expenseBox {
-    background: #fdf2f2 !important;
-    border-left: 5px solid #EF4444;
+    background: #fff0f5 !important;
+    border-left: 5px solid var(--accent-pink);
   }
   
   .profitBox {
-    background: #eff6ff !important;
-    border-left: 5px solid #3B82F6;
+    background: #f0f0f8 !important;
+    border-left: 5px solid var(--primary);
   }
 
   .summaryBox h3 {
