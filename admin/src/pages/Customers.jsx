@@ -567,9 +567,6 @@ const Customers = () => {
                           <button className={styles.iconBtn} onClick={() => setCustomerToLabel(customer)} title="Print Label">
                             <Tag size={18} />
                           </button>
-                          <button className={styles.iconBtn} onClick={() => setHistoryCustomer(customer)} title="View Profile & History">
-                            <Edit2 size={18} />
-                          </button>
                           {userRole === 'admin' && (
                             <button className={`${styles.iconBtn} ${styles.delete}`} onClick={() => handleDelete(customer.id)}>
                               <Trash2 size={18} />

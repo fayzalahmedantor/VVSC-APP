@@ -57,6 +57,7 @@ const Settings = () => {
     try {
       await updateShopProfile(profile);
       alert("Shop Settings saved successfully!");
+      window.location.reload();
     } catch (error) {
       alert("Failed to save settings.");
     } finally {
@@ -205,13 +206,6 @@ const Settings = () => {
               </button>
             </div>
 
-            {/* Developer options */}
-            <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
-              <h4 style={{ color: 'var(--danger)', marginBottom: '12px' }}>Developer Options</h4>
-              <button type="button" onClick={handleSeed} disabled={isSeeding} className="btn" style={{ background: 'var(--bg-main)', border: '1px solid var(--danger)', color: 'var(--danger)' }}>
-                {isSeeding ? 'Loading Demo Data...' : 'Load Demo Data (Testing Only)'}
-              </button>
-            </div>
           </form>
         )}
 

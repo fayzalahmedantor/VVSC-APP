@@ -11,12 +11,14 @@ const secondaryAuth = getAuth(secondaryApp);
 
 export const getEmployees = async () => {
   try {
-    const q = query(collection(db, 'users'), where('role', '==', 'employee'), where('isActive', '!=', false));
+    const q = query(collection(db, 'users'), where('role', '==', 'employee'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(emp => emp.isActive !== false);
   } catch (error) {
     console.error("Error fetching employees:", error);
-    throw error;
+    return [];
   }
 };
 

@@ -18,24 +18,26 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
 
   useEffect(() => {
     const handleAfterPrint = () => {
-      if (onClose) onClose();
+      // Don't auto close anymore, let user close it manually
     };
     
     window.addEventListener('afterprint', handleAfterPrint);
     
-    // Give QR code and images a tiny bit of time to render before invoking print
-    const timer = setTimeout(() => {
-      window.print();
-    }, 300);
-    
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('afterprint', handleAfterPrint);
     };
-  }, [onClose]);
+  }, []);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className={styles.printOnly}>
+      <div className={styles.screenActions}>
+        <button className={styles.btnPrint} onClick={handlePrint}>Print Invoice</button>
+        <button className={styles.btnClose} onClick={onClose}>Close Preview</button>
+      </div>
       <div className={styles.invoiceContainer}>
         
         {/* Watermark Logo */}

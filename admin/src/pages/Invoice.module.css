@@ -1,75 +1,92 @@
 .printOnly {
-  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.screenActions {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  display: flex;
+  gap: 12px;
+  z-index: 10000;
+}
+
+.screenActions button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btnPrint { background: var(--primary, #4a00e0); color: white; }
+.btnPrint:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(74, 0, 224, 0.4); }
+.btnClose { background: #ff4757; color: white; }
+.btnClose:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.4); }
+
+/* Thermal Receipt Container - 3.5 inches width (~88mm) */
+.invoiceContainer {
+  background: white;
+  width: 3.5in;
+  min-height: 8in;
+  padding: 0.15in;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+  font-family: 'Courier New', Courier, monospace; /* Monospace is better for thermal printers */
+  color: #000;
+  box-sizing: border-box;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 @media print {
   @page {
     margin: 0;
-    size: A4 portrait;
+    size: 3.5in auto; /* Thermal paper width */
   }
 
   body * {
     visibility: hidden;
   }
 
+  .screenActions {
+    display: none !important;
+  }
+
   .printOnly {
-    display: block !important;
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    visibility: visible;
-    padding: 20mm; /* Standard A4 padding */
+    left: 0; top: 0;
+    width: 100%; height: 100%;
     background: white;
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-    color: #111;
-    box-sizing: border-box;
+    padding: 0; margin: 0;
+    overflow: visible;
+    display: block !important;
+  }
+
+  .invoiceContainer {
+    width: 3.5in;
+    min-height: auto;
+    box-shadow: none;
+    margin: 0;
+    padding: 0.15in;
   }
 
   .printOnly * {
     visibility: visible;
   }
-
-  /* Invoice specific styles */
-  .invoiceContainer {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
-    background: transparent;
-  }
-
-  /* Watermark */
-  .watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0.05;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  .watermark img {
-    width: 400px;
-    height: auto;
-    filter: grayscale(100%);
-  }
-
-  /* Header Section */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-bottom: 2px solid #222;
-    padding-bottom: 20px;
-    margin-bottom: 24px;
-  }
-
-  .shopInfo {
-    display: flex;
-    gap: 16px;
-    align-items: center;
   }
 
   .shopLogo {
