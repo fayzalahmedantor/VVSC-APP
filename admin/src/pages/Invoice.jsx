@@ -8,7 +8,7 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const d = new Date(dateString);
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
   const invoiceNumber = `INV-${new Date(customer.createdAt).getTime().toString().slice(-6)}`;
@@ -17,9 +17,15 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
   const trackingUrl = `${window.location.origin}/track/${customer.id}`;
 
   useEffect(() => {
-    const handleAfterPrint = () => {};
+    const handleAfterPrint = () => {
+      // Don't auto close anymore, let user close it manually
+    };
+    
     window.addEventListener('afterprint', handleAfterPrint);
-    return () => window.removeEventListener('afterprint', handleAfterPrint);
+    
+    return () => {
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
   }, []);
 
   const handlePrint = () => {
@@ -34,52 +40,62 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
       </div>
       <div className={styles.invoiceContainer}>
         
-        {/* Header Section */}
+        {/* Watermark Logo */}
+        {shopProfile?.logo && (
+          <div className={styles.watermark}>
+            <img src={shopProfile.logo} alt="Watermark" />
+          </div>
+        )}
+
+        {/* Header */}
         <div className={styles.header}>
-          {shopProfile?.logo && <img src={shopProfile.logo} alt="Logo" className={styles.shopLogo} />}
-          <div className={styles.shopDetails}>
-            <h1>{shopProfile?.shopName || 'My Shop'}</h1>
-            <p>{shopProfile?.address || 'Shop Address here'}</p>
-            <p>Phone: {shopProfile?.phone || '+8801XXXXXXXXX'}</p>
+          <div className={styles.shopInfo}>
+            {shopProfile?.logo && <img src={shopProfile.logo} alt="Logo" className={styles.shopLogo} />}
+            <div className={styles.shopDetails}>
+              <h1>{shopProfile?.shopName || 'My Shop'}</h1>
+              <p>{shopProfile?.address || 'Shop Address here'}</p>
+              <p>Phone: {shopProfile?.phone || '+8801XXXXXXXXX'}</p>
+            </div>
+          </div>
+          
+          <div className={styles.invoiceTitle}>
+            <h2>INVOICE</h2>
+            <div className={styles.qrCodeContainer} style={{ background: 'white', padding: '8px', borderRadius: '8px', display: 'inline-block' }}>
+              <QRCode value={trackingUrl} size={100} level="L" />
+            </div>
+            <div className={styles.metaInfo}>
+              <p><strong>Memo No:</strong> {invoiceNumber}</p>
+              <p><strong>Date:</strong> {formatDate(customer.createdAt)}</p>
+            </div>
           </div>
         </div>
-        
-        <div className={styles.invoiceTitle}>
-          <h2>INVOICE</h2>
-        </div>
 
-        <div className={styles.metaInfo}>
-          <p><strong>Memo No:</strong> {invoiceNumber}</p>
-          <p><strong>Date:</strong> {formatDate(customer.createdAt)}</p>
+        {/* Two Column Customer & Device Section */}
+        <div className={styles.customerSection}>
+          <div className={styles.infoBox}>
+            <h3>Bill To</h3>
+            <p><strong>Name:</strong> {customer.name}</p>
+            <p><strong>Phone:</strong> {customer.phone}</p>
+            {customer.address && <p><strong>Address:</strong> {customer.address}</p>}
+          </div>
+          
+          <div className={styles.infoBox}>
+            <h3>Appliance Details</h3>
+            <p><strong>Type:</strong> {customer.brand} {customer.deviceType}</p>
+            {customer.imeiOrSerial && <p><strong>Model/SN:</strong> {customer.imeiOrSerial}</p>}
+            {customer.deliveryDate && <p><strong>Delivery:</strong> {formatDate(customer.deliveryDate)}</p>}
+            {customer.warranty && customer.warranty !== 'None' && <p><strong>Warranty:</strong> {customer.warranty}</p>}
+          </div>
         </div>
-
-        <div className={styles.divider}></div>
-
-        {/* Customer & Device Section */}
-        <div className={styles.infoBox}>
-          <h3>Bill To</h3>
-          <p><strong>Name:</strong> {customer.name}</p>
-          <p><strong>Phone:</strong> {customer.phone}</p>
-          {customer.address && <p><strong>Address:</strong> {customer.address}</p>}
-        </div>
-        
-        <div className={styles.infoBox}>
-          <h3>Device Info</h3>
-          <p>{customer.brand} {customer.deviceType}</p>
-          {customer.imeiOrSerial && <p><strong>SN:</strong> {customer.imeiOrSerial}</p>}
-          {customer.deliveryDate && <p><strong>Delivery:</strong> {new Date(customer.deliveryDate).toLocaleDateString('en-GB')}</p>}
-          {customer.warranty && customer.warranty !== 'None' && <p><strong>Warranty:</strong> {customer.warranty}</p>}
-        </div>
-
-        <div className={styles.divider}></div>
 
         {/* Service Table */}
         <table className={styles.table}>
           <thead>
             <tr>
-              <th style={{ width: '10%' }}>Qty</th>
+              <th style={{ width: '5%' }}>#</th>
               <th style={{ width: '60%' }}>Description</th>
-              <th className={styles.amountCol} style={{ width: '30%' }}>Amount</th>
+              <th style={{ width: '15%' }}>Status</th>
+              <th className={styles.amountCol} style={{ width: '20%' }}>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -88,8 +104,8 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
               <td>
                 <div className={styles.problemDesc}>{customer.deviceProblem || 'Service Charge'}</div>
                 {customer.notes && <div className={styles.notesDesc}>Note: {customer.notes}</div>}
-                <div className={styles.notesDesc}>Status: {customer.status}</div>
               </td>
+              <td>{customer.status}</td>
               <td className={styles.amountCol}>৳{customer.totalBill || 0}</td>
             </tr>
           </tbody>
@@ -104,16 +120,16 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
                 <td>৳{customer.totalBill || 0}</td>
               </tr>
               <tr>
-                <td>Advance ({customer.paymentMethod || 'Cash'})</td>
+                <td>Advance / Paid ({customer.paymentMethod || 'Cash'})</td>
                 <td>৳{customer.advance || 0}</td>
               </tr>
               {customer.redeemedPoints > 0 && (
                 <tr className={styles.discountRow}>
-                  <td>Discount</td>
+                  <td>Discount (Loyalty Points)</td>
                   <td>-৳{customer.redeemedPoints * 2}</td>
                 </tr>
               )}
-              <tr className={styles.grandTotal}>
+              <tr className={`${styles.grandTotal} ${Number(customer.dueBalance) > 0 ? styles.due : ''}`}>
                 <td>{Number(customer.dueBalance) > 0 ? 'Due Balance' : 'Total Paid'}</td>
                 <td>৳{customer.dueBalance || 0}</td>
               </tr>
@@ -121,23 +137,25 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
           </table>
         </div>
 
-        <div className={styles.divider}></div>
-
-        {/* QR Code */}
-        <div className={styles.qrCodeContainer}>
-          <div style={{ background: 'white', padding: '4px', display: 'inline-block' }}>
-            <QRCode value={trackingUrl} size={80} level="L" />
+        {/* Signatures */}
+        <div className={styles.footer}>
+          <div className={styles.signatureBox}>
+            <div className={styles.signatureLine}></div>
+            <div className={styles.signatureText}>Customer Signature</div>
           </div>
-          <p style={{ fontSize: '10px', marginTop: '4px' }}>Scan to track status</p>
+          <div className={styles.signatureBox}>
+            <div className={styles.signatureLine}></div>
+            <div className={styles.signatureText}>Authorized Signature</div>
+          </div>
         </div>
 
         {/* Terms */}
         <div className={styles.terms}>
-          <p>Terms & Conditions</p>
+          <p><strong>Terms & Conditions:</strong></p>
           <ol>
-            <li>Bring this memo when collecting device.</li>
-            <li>Not responsible for devices left over 30 days.</li>
-            <li>Warranty void if physical seal is broken.</li>
+            <li>Please bring this memo when collecting your device.</li>
+            <li>We are not responsible for devices left over 30 days after repair completion.</li>
+            <li>Warranty (if any) is void if the physical seal is broken or there is liquid damage.</li>
             {shopProfile?.receiptFooter && <li>{shopProfile.receiptFooter}</li>}
           </ol>
         </div>
