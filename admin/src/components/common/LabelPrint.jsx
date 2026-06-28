@@ -1,48 +1,38 @@
-import React, { useEffect } from 'react';
-import QRCode from 'react-qr-code';
+import React from 'react';
+import { createPortal } from 'react-dom';
+import Barcode from 'react-barcode';
 import styles from './LabelPrint.module.css';
 
 const LabelPrint = ({ customer, shopProfile, onClose }) => {
   if (!customer) return null;
 
-  const trackingUrl = `${window.location.origin}/track/${customer.id}`;
-  
-  useEffect(() => {
-    const handleAfterPrint = () => {
-      if (onClose) onClose();
-    };
-    
-    window.addEventListener('afterprint', handleAfterPrint);
-    
-    const timer = setTimeout(() => {
-      window.print();
-    }, 300);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-  }, [onClose]);
+  const handlePrint = () => {
+    window.print();
+  };
 
-  return (
+  const labelContent = (
     <div className={styles.printOnly}>
-      <div className={styles.labelContainer}>
-        <div className={styles.shopName}>{shopProfile?.shopName || 'Repair Shop'}</div>
-        
-        <div className={styles.mainContent}>
-          <div className={styles.qrCode}>
-            <QRCode value={trackingUrl} size={64} level="L" />
-          </div>
-          <div className={styles.details}>
-            <div className={styles.customerName}>{customer.name}</div>
-            <div className={styles.deviceType}>{customer.brand} {customer.deviceType}</div>
-            <div className={styles.phone}>{customer.phone}</div>
-            {customer.imeiOrSerial && <div className={styles.serial}>SN: {customer.imeiOrSerial}</div>}
+      <div className={styles.screenActions}>
+        <button className={styles.btnPrint} onClick={handlePrint}>Print Label</button>
+        <button className={styles.btnClose} onClick={onClose}>Close Preview</button>
+      </div>
+
+      <div className={styles.labelContainerWrapper}>
+        <div className={styles.labelContainer}>
+          <div className={styles.shopName}>{shopProfile?.shopName || 'Repair Shop'}</div>
+          <div className={styles.customerName}>{customer.name}</div>
+          
+          <div className={styles.mainContent}>
+            <div className={styles.qrCode}>
+              <Barcode value={customer.id} width={1.8} height={45} fontSize={14} fontOptions="bold" margin={0} background="#ffffff" lineColor="#000000" />
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
+
+  return createPortal(labelContent, document.body);
 };
 
 export default LabelPrint;
