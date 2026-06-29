@@ -1,0 +1,206 @@
+.animWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0 0;
+  background: transparent;
+}
+
+.scene {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  overflow: visible;
+}
+
+/* ─────────────────── RECEIVED: Walking ─────────────────── */
+
+/* Whole person walks forward slightly */
+.walkGroup {
+  animation: walkSway 0.7s ease-in-out infinite;
+}
+@keyframes walkSway {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(4px); }
+}
+
+/* Body bobs up/down */
+.bodyBob {
+  animation: bodyBob 0.7s ease-in-out infinite;
+}
+@keyframes bodyBob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* Left arm swings */
+.armSwingL {
+  transform-box: fill-box;
+  transform-origin: top right;
+  animation: armSwing 0.7s ease-in-out infinite;
+}
+@keyframes armSwing {
+  0%, 100% { transform: rotate(-20deg); }
+  50%       { transform: rotate(20deg); }
+}
+
+/* Legs alternate */
+.legL {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: legSwingL 0.7s ease-in-out infinite;
+}
+.legR {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: legSwingL 0.7s ease-in-out infinite reverse;
+}
+@keyframes legSwingL {
+  0%, 100% { transform: rotate(-22deg); }
+  50%       { transform: rotate(22deg); }
+}
+
+/* ─────────────────── IN PROGRESS: Tool work ─────────────────── */
+
+/* Arm + tool swings back and forth */
+.toolArm {
+  transform-box: fill-box;
+  transform-origin: top right;
+  animation: toolWork 0.55s ease-in-out infinite;
+}
+@keyframes toolWork {
+  0%, 100% { transform: rotate(-18deg); }
+  50%       { transform: rotate(18deg); }
+}
+
+/* Sparks pop in and out, staggered */
+.spark1 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkPop 0.9s ease-in-out infinite;
+}
+.spark2 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkPop 0.9s ease-in-out infinite 0.3s;
+}
+.spark3 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkPop 0.9s ease-in-out infinite 0.6s;
+}
+.spark4 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkPop 0.9s ease-in-out infinite 0.15s;
+}
+@keyframes sparkPop {
+  0%, 100% { transform: scale(0); opacity: 0; }
+  40%, 60%  { transform: scale(1.3); opacity: 1; }
+}
+
+/* ─────────────────── READY: Glow + Float ─────────────────── */
+
+.glowRingOuter {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: glowExpand 1.4s ease-in-out infinite;
+}
+.glowRingMid {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: glowExpand 1.4s ease-in-out infinite 0.2s;
+}
+.glowFill {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: glowExpand 1.4s ease-in-out infinite 0.4s;
+}
+@keyframes glowExpand {
+  0%, 100% { transform: scale(0.85); opacity: 0.2; }
+  50%       { transform: scale(1.2);  opacity: 1; }
+}
+
+.deviceFloat {
+  animation: deviceFloat 1.6s ease-in-out infinite;
+}
+@keyframes deviceFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+
+/* Stars twinkle at different times */
+.star1 { animation: starTwinkle 1.4s ease-in-out infinite;        fill: #f59e0b; }
+.star2 { animation: starTwinkle 1.4s ease-in-out infinite 0.35s;  fill: #fbbf24; }
+.star3 { animation: starTwinkle 1.4s ease-in-out infinite 0.7s;   fill: #f59e0b; }
+.star4 { animation: starTwinkle 1.4s ease-in-out infinite 1.05s;  fill: #fbbf24; }
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50%       { opacity: 1; transform: scale(1)   rotate(30deg); }
+}
+
+/* ─────────────────── DELIVERY: Flying device + Celebrate ─────────────────── */
+
+/* Device bobs between the two people */
+.flyDevice {
+  animation: flyDevice 1.5s ease-in-out infinite;
+}
+@keyframes flyDevice {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  30%       { transform: translate(4px, -10px) rotate(-5deg); }
+  70%       { transform: translate(-4px, -6px)  rotate(4deg); }
+}
+
+/* Customer arms bounce up in celebration */
+.celebArmL {
+  transform-box: fill-box;
+  transform-origin: bottom right;
+  animation: celebArmL 1s ease-in-out infinite;
+}
+@keyframes celebArmL {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(-18deg); }
+}
+.celebArmR {
+  transform-box: fill-box;
+  transform-origin: bottom left;
+  animation: celebArmR 1s ease-in-out infinite;
+}
+@keyframes celebArmR {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(18deg); }
+}
+
+/* Confetti pops */
+.confetti1 { animation: confettiPop 1.2s ease-in-out infinite;       }
+.confetti2 { animation: confettiPop 1.2s ease-in-out infinite 0.4s;  }
+.confetti3 { animation: confettiPop 1.2s ease-in-out infinite 0.8s; fill: #f59e0b; }
+@keyframes confettiPop {
+  0%, 100% { opacity: 0; transform: scale(0.5) translateY(5px); }
+  50%       { opacity: 1; transform: scale(1)   translateY(0px); }
+}
+
+/* ─────────────────── CANCELLED: Shake + Tear ─────────────────── */
+
+.shakeDevice {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: shake 0.5s ease-in-out infinite;
+}
+@keyframes shake {
+  0%,100% { transform: rotate(0deg); }
+  20%      { transform: rotate(-4deg); }
+  40%      { transform: rotate(4deg); }
+  60%      { transform: rotate(-3deg); }
+  80%      { transform: rotate(3deg); }
+}
+
+.tear {
+  animation: tearFall 1.4s ease-in infinite;
+}
+@keyframes tearFall {
+  0%   { transform: translateY(0);   opacity: 1; }
+  70%  { transform: translateY(10px); opacity: 0.6; }
+  100% { transform: translateY(14px); opacity: 0; }
+}

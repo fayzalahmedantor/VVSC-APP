@@ -56,13 +56,24 @@
   text-transform: uppercase;
 }
 
-/* ─── Status Hero — Horizontal compact ─── */
+/* ─── Animation Section ─── */
+.animSection {
+  padding: 10px 0 4px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+/* ─── Status Hero — Compact label row ─── */
 .statusHero {
-  padding: 14px 18px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   border-bottom: 1px solid rgba(0,0,0,0.07);
+  margin: 0 18px 0;
+  border-radius: 10px;
+  border-left-width: 4px;
+  border-left-style: solid;
+  margin: 12px 14px;
 }
 
 .statusIconWrap {

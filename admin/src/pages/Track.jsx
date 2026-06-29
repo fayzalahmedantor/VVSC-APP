@@ -3,9 +3,10 @@ import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import {
-  Package, CheckCircle, Clock, Truck, ShieldAlert, Wrench, XCircle, Store
+  Package, CheckCircle, Truck, ShieldAlert, Wrench, XCircle, Store
 } from 'lucide-react';
 import styles from './Track.module.css';
+import StatusAnimation from '../components/common/StatusAnimation';
 
 const STEPS = [
   { key: 'Received', label: 'Received', icon: Package },
@@ -106,10 +107,15 @@ const Track = () => {
           <p className={styles.subtitle}>Device Repair Tracker</p>
         </div>
 
-        {/* ─── Status Hero ─── */}
-        <div className={styles.statusHero} style={{ background: statusMeta.bg }}>
-          <div className={styles.statusIconWrap} style={{ background: statusMeta.color + '22', border: `2px solid ${statusMeta.color}30` }}>
-            <StatusIcon size={26} color={statusMeta.color} strokeWidth={2.2} />
+        {/* ─── Status Animation ─── */}
+        <div className={styles.animSection} style={{ background: statusMeta.bg }}>
+          <StatusAnimation status={customer.status} />
+        </div>
+
+        {/* ─── Status Hero (compact label row) ─── */}
+        <div className={styles.statusHero} style={{ borderLeft: `4px solid ${statusMeta.color}`, background: statusMeta.bg }}>
+          <div className={styles.statusIconWrap} style={{ background: statusMeta.color + '22' }}>
+            <StatusIcon size={20} color={statusMeta.color} strokeWidth={2.2} />
           </div>
           <div className={styles.statusTextBlock}>
             <div className={styles.statusLabel} style={{ color: statusMeta.color }}>
