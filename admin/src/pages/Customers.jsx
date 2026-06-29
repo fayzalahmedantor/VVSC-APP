@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, X, Star, Settings as SettingsIcon, Scan, Printer, MessageCircle, Tag } from 'lucide-react';
 import { getCustomers, addCustomer, updateCustomer, deleteCustomer } from '../services/customerService';
@@ -14,6 +14,7 @@ import CustomerHistoryModal from '../components/common/CustomerHistoryModal';
 import StatusDropdown from '../components/common/StatusDropdown';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
+import CustomSelect from '../components/ui/CustomSelect';
 import styles from './Customers.module.css';
 
 const getWhatsAppLink = (phone, message = '') => {
@@ -42,8 +43,37 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [alertFilter, setAlertFilter] = useState('');
   const [newOption, setNewOption] = useState('');
+
+  // Sort appliance types by usage frequency in customer records
+  const sortedDeviceTypes = useMemo(() => {
+    const rawTypes = dropdownOptions.deviceType || [];
+    if (rawTypes.length === 0) return [];
+    
+    const counts = {};
+    customers.forEach(c => {
+      if (c.deviceType) {
+        counts[c.deviceType] = (counts[c.deviceType] || 0) + 1;
+      }
+    });
+
+    return [...rawTypes].sort((a, b) => {
+      const countA = counts[a] || 0;
+      const countB = counts[b] || 0;
+      if (countB !== countA) {
+        return countB - countA;
+      }
+      return a.localeCompare(b);
+    });
+  }, [dropdownOptions.deviceType, customers]);
   
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: true,
+    onConfirm: null
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
@@ -156,22 +186,7 @@ const Customers = () => {
     setNewOption('');
   };
 
-  const handleDeleteOption = async (optionToDelete) => {
-    const updatedOptions = { ...dropdownOptions };
-    
-    if (settingsTab === 'brand' || settingsTab === 'issue') {
-      const type = formData.deviceType;
-      if (updatedOptions[settingsTab] && updatedOptions[settingsTab][type]) {
-        updatedOptions[settingsTab][type] = updatedOptions[settingsTab][type].filter(opt => opt !== optionToDelete);
-        await updateDropdownSetting(settingsTab, updatedOptions[settingsTab]);
-        setDropdownOptions(updatedOptions);
-      }
-    } else {
-      updatedOptions[settingsTab] = updatedOptions[settingsTab].filter(opt => opt !== optionToDelete);
-      await updateDropdownSetting(settingsTab, updatedOptions[settingsTab]);
-      setDropdownOptions(updatedOptions);
-    }
-  };
+
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,41 +216,7 @@ const Customers = () => {
     warranty: 'None'
   });
 
-  const handleOpenModal = (customer = null, prefillData = null) => {
-    if (customer) {
-      setEditingCustomer(customer);
-      setFormData({
-        name: customer.name || '',
-        phone: customer.phone || '',
-        address: customer.address || '',
-        brand: customer.brand || '',
-        deviceType: customer.deviceType || '',
-        imeiOrSerial: customer.imeiOrSerial || '',
-        issue: customer.issue || '',
-        estCost: customer.estCost || '',
-        advance: customer.advance || '',
-        deliveryDate: customer.deliveryDate || '',
-        status: customer.status || 'Received',
-        paymentMethod: customer.paymentMethod || 'Cash',
-        notes: customer.notes || '',
-        mechanic: customer.mechanic || '',
-        warranty: customer.warranty || 'None'
-      });
-    } else {
-      setEditingCustomer(null);
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const defaultDate = tomorrow.toISOString().split('T')[0];
 
-      setFormData({
-        name: prefillData?.name || '', 
-        phone: prefillData?.phone || '', 
-        address: prefillData?.address || '', 
-        brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: '', warranty: 'None'
-      });
-    }
-    setIsModalOpen(true);
-  };
 
   const handleGlobalScan = (text) => {
     setShowGlobalScanner(false);
@@ -413,21 +394,48 @@ const Customers = () => {
     setDeliveryParts(newParts);
   };
 
-  const handleDelete = (id) => {
-    setConfirmModal({ isOpen: true, id });
+  const handleDeleteOption = async (optionToDelete) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Option',
+      message: `Are you sure you want to delete the option "${optionToDelete}"?`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        const updatedOptions = { ...dropdownOptions };
+        if (settingsTab === 'brand' || settingsTab === 'issue') {
+          const type = formData.deviceType;
+          if (updatedOptions[settingsTab] && updatedOptions[settingsTab][type]) {
+            updatedOptions[settingsTab][type] = updatedOptions[settingsTab][type].filter(opt => opt !== optionToDelete);
+            await updateDropdownSetting(settingsTab, updatedOptions[settingsTab]);
+            setDropdownOptions(updatedOptions);
+          }
+        } else {
+          updatedOptions[settingsTab] = updatedOptions[settingsTab].filter(opt => opt !== optionToDelete);
+          await updateDropdownSetting(settingsTab, updatedOptions[settingsTab]);
+          setDropdownOptions(updatedOptions);
+        }
+      }
+    });
   };
 
-  const executeDelete = async () => {
-    const id = confirmModal.id;
-    if (!id) return;
-    try {
-      await deleteCustomer(id);
-      setCustomers(customers.filter(c => c.id !== id));
-    } catch (error) {
-      alert("Failed to delete customer.");
-    } finally {
-      setConfirmModal({ isOpen: false, id: null });
-    }
+  const handleDelete = (id) => {
+    const cust = customers.find(c => c.id === id);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Customer',
+      message: `Are you sure you want to delete customer "${cust?.name || ''}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteCustomer(id);
+          setCustomers(customers.filter(c => c.id !== id));
+        } catch (error) {
+          alert("Failed to delete customer.");
+        }
+      }
+    });
   };
 
   const filteredCustomers = customers.filter(c => {
@@ -454,6 +462,57 @@ const Customers = () => {
   const currentCustomers = filteredCustomers.slice(indexOfFirstItem, indexOfLastItem);
 
   const getInitials = (name) => name ? name.charAt(0).toUpperCase() : '?';
+
+  const handleOpenModal = (customer = null, prefillData = null) => {
+    const openForm = () => {
+      if (customer) {
+        setEditingCustomer(customer);
+        setFormData({
+          name: customer.name || '',
+          phone: customer.phone || '',
+          address: customer.address || '',
+          brand: customer.brand || '',
+          deviceType: customer.deviceType || '',
+          imeiOrSerial: customer.imeiOrSerial || '',
+          issue: customer.issue || '',
+          estCost: customer.estCost || '',
+          advance: customer.advance || '',
+          deliveryDate: customer.deliveryDate || '',
+          status: customer.status || 'Received',
+          paymentMethod: customer.paymentMethod || 'Cash',
+          notes: customer.notes || '',
+          mechanic: customer.mechanic || '',
+          warranty: customer.warranty || 'None'
+        });
+      } else {
+        setEditingCustomer(null);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const defaultDate = tomorrow.toISOString().split('T')[0];
+
+        setFormData({
+          name: prefillData?.name || '', 
+          phone: prefillData?.phone || '', 
+          address: prefillData?.address || '', 
+          brand: '', deviceType: '', imeiOrSerial: '', issue: '', estCost: '', advance: '', deliveryDate: defaultDate, status: 'Received', paymentMethod: 'Cash', notes: '', mechanic: '', warranty: 'None'
+        });
+      }
+      setIsModalOpen(true);
+    };
+
+    if (customer) {
+      setConfirmModal({
+        isOpen: true,
+        title: 'Edit Customer',
+        message: `Are you sure you want to edit customer "${customer.name}"?`,
+        confirmText: 'Edit',
+        isDanger: false,
+        onConfirm: openForm
+      });
+    } else {
+      openForm();
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -825,10 +884,14 @@ const Customers = () => {
                     Appliance Type *
                     <span className={styles.manageLink} onClick={() => { setSettingsTab('deviceType'); setIsSettingsOpen(true); }}><SettingsIcon size={12} /> Manage</span>
                   </label>
-                  <select required value={formData.deviceType} onChange={e => setFormData({...formData, deviceType: e.target.value, brand: '', issue: ''})}>
-                    <option value="" disabled hidden>Select Type</option>
-                    {(dropdownOptions.deviceType || []).map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.deviceType}
+                    onChange={val => setFormData({...formData, deviceType: val, brand: '', issue: ''})}
+                    options={sortedDeviceTypes}
+                    placeholder={(sortedDeviceTypes.length === 0) ? "No Appliance Types Added" : "Select Type"}
+                    required
+                    disabled={sortedDeviceTypes.length === 0}
+                  />
                 </div>
               </div>
 
@@ -842,10 +905,13 @@ const Customers = () => {
                       setIsSettingsOpen(true); 
                     }}><SettingsIcon size={12} /> Manage</span>
                   </label>
-                  <select value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})}>
-                    <option value="" disabled hidden>Select Brand</option>
-                    {(dropdownOptions.brand?.[formData.deviceType] || []).map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.brand}
+                    onChange={val => setFormData({...formData, brand: val})}
+                    options={dropdownOptions.brand?.[formData.deviceType] || []}
+                    placeholder={!formData.deviceType ? "Select Appliance Type first" : (!(dropdownOptions.brand?.[formData.deviceType]?.length > 0) ? "No Brands Added for this Type" : "Select Brand")}
+                    disabled={!formData.deviceType || !(dropdownOptions.brand?.[formData.deviceType]?.length > 0)}
+                  />
                 </div>
                 <div className={styles.formGroup}>
                   <label style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -856,10 +922,14 @@ const Customers = () => {
                       setIsSettingsOpen(true); 
                     }}><SettingsIcon size={12} /> Manage</span>
                   </label>
-                  <select required value={formData.issue} onChange={e => setFormData({...formData, issue: e.target.value})}>
-                    <option value="" disabled hidden>Select Problem</option>
-                    {(dropdownOptions.issue?.[formData.deviceType] || []).map(i => <option key={i} value={i}>{i}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.issue}
+                    onChange={val => setFormData({...formData, issue: val})}
+                    options={dropdownOptions.issue?.[formData.deviceType] || []}
+                    placeholder={!formData.deviceType ? "Select Appliance Type first" : (!(dropdownOptions.issue?.[formData.deviceType]?.length > 0) ? "No Problems Added for this Type" : "Select Problem")}
+                    required
+                    disabled={!formData.deviceType || !(dropdownOptions.issue?.[formData.deviceType]?.length > 0)}
+                  />
                 </div>
               </div>
 
@@ -883,37 +953,44 @@ const Customers = () => {
                     Local Mechanic
                     <span className={styles.manageLink} onClick={() => { navigate('/mechanics'); handleCloseModal(); }}><SettingsIcon size={12} /> Manage</span>
                   </label>
-                  <select value={formData.mechanic} onChange={e => {
-                    const selectedName = e.target.value;
-                    const mechanic = b2bMechanics.find(m => m.name === selectedName);
-                    
-                    if (mechanic) {
-                      setFormData({
-                        ...formData, 
-                        mechanic: selectedName,
-                        name: mechanic.name || '',
-                        phone: mechanic.phone || '',
-                        address: mechanic.address || ''
-                      });
-                    } else {
-                      setFormData({...formData, mechanic: selectedName});
-                    }
-                  }}>
-                    <option value="" disabled hidden>Select Mechanic</option>
-                    {b2bMechanics.map(m => <option key={m.id} value={m.name}>{m.name} {m.shopName ? `(${m.shopName})` : ''}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.mechanic}
+                    onChange={val => {
+                      const selectedName = val;
+                      const mechanic = b2bMechanics.find(m => m.name === selectedName);
+                      if (mechanic) {
+                        setFormData({
+                          ...formData, 
+                          mechanic: selectedName,
+                          name: mechanic.name || '',
+                          phone: mechanic.phone || '',
+                          address: mechanic.address || ''
+                        });
+                      } else {
+                        setFormData({...formData, mechanic: selectedName});
+                      }
+                    }}
+                    options={b2bMechanics.map(m => ({ value: m.name, label: `${m.name} ${m.shopName ? `(${m.shopName})` : ''}` }))}
+                    placeholder={b2bMechanics.length === 0 ? "No Mechanics Added" : "Select Mechanic"}
+                    disabled={b2bMechanics.length === 0}
+                  />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Warranty Period</label>
-                  <select value={formData.warranty} onChange={e => setFormData({...formData, warranty: e.target.value})}>
-                    <option value="None">No Warranty</option>
-                    <option value="7 Days">7 Days</option>
-                    <option value="15 Days">15 Days</option>
-                    <option value="1 Month">1 Month</option>
-                    <option value="3 Months">3 Months</option>
-                    <option value="6 Months">6 Months</option>
-                    <option value="1 Year">1 Year</option>
-                  </select>
+                  <CustomSelect
+                    value={formData.warranty}
+                    onChange={val => setFormData({...formData, warranty: val})}
+                    options={[
+                      { value: 'None', label: 'No Warranty' },
+                      { value: '7 Days', label: '7 Days' },
+                      { value: '15 Days', label: '15 Days' },
+                      { value: '1 Month', label: '1 Month' },
+                      { value: '3 Months', label: '3 Months' },
+                      { value: '6 Months', label: '6 Months' },
+                      { value: '1 Year', label: '1 Year' }
+                    ]}
+                    placeholder="Select Warranty"
+                  />
                 </div>
               </div>
 
@@ -998,12 +1075,15 @@ const Customers = () => {
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title="Delete Customer"
-        message="Are you sure you want to delete this customer? This action cannot be undone."
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={() => {
+          if (confirmModal.onConfirm) confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
 
       {showScanner && (

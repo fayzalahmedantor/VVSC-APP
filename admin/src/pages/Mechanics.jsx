@@ -20,7 +20,14 @@ const Mechanics = () => {
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
   
   const [editingMechanic, setEditingMechanic] = useState(null);
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: true,
+    onConfirm: null
+  });
   
   const [collectMechanic, setCollectMechanic] = useState(null);
   const [collectAmount, setCollectAmount] = useState('');
@@ -62,24 +69,39 @@ const Mechanics = () => {
 
   // ----- Mechanic List Logic -----
   const handleOpenModal = (mechanic = null) => {
+    const openForm = () => {
+      if (mechanic) {
+        setEditingMechanic(mechanic);
+        setFormData({
+          name: mechanic.name,
+          shopName: mechanic.shopName || '',
+          phone: mechanic.phone,
+          address: mechanic.address || '',
+          totalBill: mechanic.totalBill || 0,
+          advance: mechanic.advance || 0,
+          dueBalance: mechanic.dueBalance || 0
+        });
+      } else {
+        setEditingMechanic(null);
+        setFormData({
+          name: '', shopName: '', phone: '', address: '', totalBill: 0, advance: 0, dueBalance: 0
+        });
+      }
+      setIsModalOpen(true);
+    };
+
     if (mechanic) {
-      setEditingMechanic(mechanic);
-      setFormData({
-        name: mechanic.name,
-        shopName: mechanic.shopName || '',
-        phone: mechanic.phone,
-        address: mechanic.address || '',
-        totalBill: mechanic.totalBill || 0,
-        advance: mechanic.advance || 0,
-        dueBalance: mechanic.dueBalance || 0
+      setConfirmModal({
+        isOpen: true,
+        title: 'Edit Mechanic',
+        message: `Are you sure you want to edit mechanic "${mechanic.name}"?`,
+        confirmText: 'Edit',
+        isDanger: false,
+        onConfirm: openForm
       });
     } else {
-      setEditingMechanic(null);
-      setFormData({
-        name: '', shopName: '', phone: '', address: '', totalBill: 0, advance: 0, dueBalance: 0
-      });
+      openForm();
     }
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -106,20 +128,22 @@ const Mechanics = () => {
   };
 
   const handleDelete = (id) => {
-    setConfirmModal({ isOpen: true, id });
-  };
-
-  const executeDelete = async () => {
-    const id = confirmModal.id;
-    if (!id) return;
-    try {
-      await deleteMechanic(id);
-      setMechanics(mechanics.filter(m => m.id !== id));
-    } catch (error) {
-      alert("Failed to delete mechanic.");
-    } finally {
-      setConfirmModal({ isOpen: false, id: null });
-    }
+    const mech = mechanics.find(m => m.id === id);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Mechanic',
+      message: `Are you sure you want to delete mechanic "${mech?.name || ''}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteMechanic(id);
+          setMechanics(mechanics.filter(m => m.id !== id));
+        } catch (error) {
+          alert("Failed to delete mechanic.");
+        }
+      }
+    });
   };
 
   const handleOpenCollect = (mechanic) => {
@@ -417,12 +441,15 @@ const Mechanics = () => {
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title="Delete Mechanic"
-        message="Are you sure you want to delete this mechanic? This action cannot be undone."
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={() => {
+          if (confirmModal.onConfirm) confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
     </div>
   );

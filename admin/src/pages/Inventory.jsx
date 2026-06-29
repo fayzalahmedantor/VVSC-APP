@@ -5,6 +5,7 @@ import { getProducts, addProduct, updateProduct, deleteProduct, addInventoryHist
 import { getDropdownSettings, updateDropdownSetting } from '../services/settingsService';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
+import CustomSelect from '../components/ui/CustomSelect';
 import styles from './Inventory.module.css';
 
 const Inventory = () => {
@@ -34,8 +35,14 @@ const Inventory = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [confirmDeleteModal, setConfirmDeleteModal] = useState({ isOpen: false, id: null });
-  const [confirmSettingModal, setConfirmSettingModal] = useState({ isOpen: false, item: null });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: true,
+    onConfirm: null
+  });
   
   const [editingProduct, setEditingProduct] = useState(null);
   const [restockProduct, setRestockProduct] = useState(null);
@@ -105,24 +112,39 @@ const Inventory = () => {
   };
 
   const handleOpenModal = (product = null) => {
+    const openForm = () => {
+      if (product) {
+        setEditingProduct(product);
+        setFormData({
+          name: product.name,
+          category: product.category || '',
+          purchasePrice: product.purchasePrice,
+          sellPrice: product.sellPrice,
+          stock: product.stock,
+          unit: product.unit || 'Pcs',
+          minStock: product.minStock || 5
+        });
+      } else {
+        setEditingProduct(null);
+        setFormData({
+          name: '', category: '', purchasePrice: '', sellPrice: '', stock: '', unit: 'Pcs', minStock: 5
+        });
+      }
+      setIsModalOpen(true);
+    };
+
     if (product) {
-      setEditingProduct(product);
-      setFormData({
-        name: product.name,
-        category: product.category || '',
-        purchasePrice: product.purchasePrice,
-        sellPrice: product.sellPrice,
-        stock: product.stock,
-        unit: product.unit || 'Pcs',
-        minStock: product.minStock || 5
+      setConfirmModal({
+        isOpen: true,
+        title: 'Edit Product',
+        message: `Are you sure you want to edit product "${product.name}"?`,
+        confirmText: 'Edit',
+        isDanger: false,
+        onConfirm: openForm
       });
     } else {
-      setEditingProduct(null);
-      setFormData({
-        name: '', category: '', purchasePrice: '', sellPrice: '', stock: '', unit: 'Pcs', minStock: 5
-      });
+      openForm();
     }
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -178,20 +200,22 @@ const Inventory = () => {
   };
 
   const handleDelete = (id) => {
-    setConfirmDeleteModal({ isOpen: true, id });
-  };
-
-  const executeDelete = async () => {
-    const id = confirmDeleteModal.id;
-    if (!id) return;
-    try {
-      await deleteProduct(id);
-      setProducts(products.filter(p => p.id !== id));
-    } catch (error) {
-      alert("Failed to delete product.");
-    } finally {
-      setConfirmDeleteModal({ isOpen: false, id: null });
-    }
+    const product = products.find(p => p.id === id);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Product',
+      message: `Are you sure you want to delete product "${product?.name || ''}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteProduct(id);
+          setProducts(products.filter(p => p.id !== id));
+        } catch (error) {
+          alert("Failed to delete product.");
+        }
+      }
+    });
   };
   
   // Restock logic
@@ -270,29 +294,30 @@ const Inventory = () => {
   };
 
   const handleRemoveSetting = (itemToRemove) => {
-    setConfirmSettingModal({ isOpen: true, item: itemToRemove });
-  };
-
-  const executeRemoveSetting = async () => {
-    const itemToRemove = confirmSettingModal.item;
-    if (!itemToRemove) return;
-    try {
-      if (settingsType === 'productNames') {
-        const cat = formData.category;
-        const currentOptions = (dropdownSettings.productNames[cat] || []).filter(opt => opt !== itemToRemove);
-        const newObj = { ...dropdownSettings.productNames, [cat]: currentOptions };
-        await updateDropdownSetting('productNames', newObj);
-        setDropdownSettings(prev => ({...prev, productNames: newObj}));
-      } else {
-        const currentOptions = dropdownSettings[settingsType].filter(opt => opt !== itemToRemove);
-        await updateDropdownSetting(settingsType, currentOptions);
-        setDropdownSettings(prev => ({...prev, [settingsType]: currentOptions}));
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Setting Option',
+      message: `Are you sure you want to remove "${itemToRemove}"?`,
+      confirmText: 'Remove',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          if (settingsType === 'productNames') {
+            const cat = formData.category;
+            const currentOptions = (dropdownSettings.productNames[cat] || []).filter(opt => opt !== itemToRemove);
+            const newObj = { ...dropdownSettings.productNames, [cat]: currentOptions };
+            await updateDropdownSetting('productNames', newObj);
+            setDropdownSettings(prev => ({...prev, productNames: newObj}));
+          } else {
+            const currentOptions = dropdownSettings[settingsType].filter(opt => opt !== itemToRemove);
+            await updateDropdownSetting(settingsType, currentOptions);
+            setDropdownSettings(prev => ({...prev, [settingsType]: currentOptions}));
+          }
+        } catch (error) {
+          alert("Failed to remove option.");
+        }
       }
-    } catch (error) {
-      alert("Failed to remove option.");
-    } finally {
-      setConfirmSettingModal({ isOpen: false, item: null });
-    }
+    });
   };
 
   const filteredProducts = products.filter(p => {
@@ -464,12 +489,14 @@ const Inventory = () => {
                       <SettingsIcon size={12} /> Manage
                     </button>
                   </div>
-                  <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value, name: ''})}>
-                    <option value="" disabled hidden>Select Category</option>
-                    {dropdownSettings.productCategories.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={formData.category}
+                    onChange={val => setFormData({...formData, category: val, name: ''})}
+                    options={dropdownSettings.productCategories || []}
+                    placeholder={(!dropdownSettings.productCategories || dropdownSettings.productCategories.length === 0) ? "No Categories Added" : "Select Category"}
+                    required
+                    disabled={!dropdownSettings.productCategories || dropdownSettings.productCategories.length === 0}
+                  />
                 </div>
 
                 <div className={styles.formGroup}>
@@ -479,22 +506,28 @@ const Inventory = () => {
                       <SettingsIcon size={12} /> Manage
                     </button>
                   </div>
-                  <select required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}>
-                    <option value="" disabled hidden>Select Product Name</option>
-                    {(dropdownSettings.productNames[formData.category] || []).map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={formData.name}
+                    onChange={val => setFormData({...formData, name: val})}
+                    options={dropdownSettings.productNames[formData.category] || []}
+                    placeholder={!formData.category ? "Select Category first" : (!(dropdownSettings.productNames[formData.category]?.length > 0) ? "No Product Names Added for this Category" : "Select Product Name")}
+                    required
+                    disabled={!formData.category || !(dropdownSettings.productNames[formData.category]?.length > 0)}
+                  />
                 </div>
 
                 <div className={styles.formGroup}>
                   <label>Stock Quantity *</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input required type="number" min="0" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} onWheel={e => e.target.blur()} placeholder="0" style={{ flex: 2 }} />
-                    <select value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} style={{ flex: 1 }}>
-                      <option value="Pcs">Pcs</option>
-                      <option value="Set">Set</option>
-                    </select>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input required type="number" min="0" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} onWheel={e => e.target.blur()} placeholder="0" style={{ flex: 2, padding: '14px 16px', boxSizing: 'border-box' }} />
+                    <div style={{ flex: 1 }}>
+                      <CustomSelect
+                        value={formData.unit}
+                        onChange={val => setFormData({...formData, unit: val})}
+                        options={['Pcs', 'Set']}
+                        placeholder="Unit"
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -669,23 +702,16 @@ const Inventory = () => {
       )}
 
       <ConfirmModal
-        isOpen={confirmDeleteModal.isOpen}
-        title="Delete Product"
-        message="Are you sure you want to delete this product? This action cannot be undone."
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmDeleteModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
-      />
-
-      <ConfirmModal
-        isOpen={confirmSettingModal.isOpen}
-        title="Remove Setting Option"
-        message={`Are you sure you want to remove "${confirmSettingModal.item}"?`}
-        onConfirm={executeRemoveSetting}
-        onCancel={() => setConfirmSettingModal({ isOpen: false, item: null })}
-        confirmText="Remove"
-        isDanger={true}
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={() => {
+          if (confirmModal.onConfirm) confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
 
     </div>

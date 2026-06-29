@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Trash2, X, Calendar } from 'lucide-react';
 import { getExpenses, addExpense, updateExpense, deleteExpense } from '../services/expenseService';
 import ConfirmModal from '../components/common/ConfirmModal';
+import CustomSelect from '../components/ui/CustomSelect';
 import styles from './Expenses.module.css';
 
 const CATEGORIES = [
@@ -35,7 +36,14 @@ const Expenses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: true,
+    onConfirm: null
+  });
   
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -63,24 +71,39 @@ const Expenses = () => {
   };
 
   const handleOpenModal = (exp = null) => {
+    const openForm = () => {
+      if (exp) {
+        setEditingExpense(exp);
+        setFormData({
+          date: exp.date || new Date().toISOString().split('T')[0],
+          category: exp.category || '',
+          amount: exp.amount || '',
+          note: exp.note || ''
+        });
+      } else {
+        setEditingExpense(null);
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          category: '',
+          amount: '',
+          note: ''
+        });
+      }
+      setIsModalOpen(true);
+    };
+
     if (exp) {
-      setEditingExpense(exp);
-      setFormData({
-        date: exp.date || new Date().toISOString().split('T')[0],
-        category: exp.category || '',
-        amount: exp.amount || '',
-        note: exp.note || ''
+      setConfirmModal({
+        isOpen: true,
+        title: 'Edit Expense',
+        message: `Are you sure you want to edit this expense?`,
+        confirmText: 'Edit',
+        isDanger: false,
+        onConfirm: openForm
       });
     } else {
-      setEditingExpense(null);
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        category: '',
-        amount: '',
-        note: ''
-      });
+      openForm();
     }
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -116,20 +139,22 @@ const Expenses = () => {
   };
 
   const handleDelete = (id) => {
-    setConfirmModal({ isOpen: true, id });
-  };
-
-  const executeDelete = async () => {
-    const id = confirmModal.id;
-    if (!id) return;
-    try {
-      await deleteExpense(id);
-      setExpenses(expenses.filter(e => e.id !== id));
-    } catch (error) {
-      alert("Failed to delete expense.");
-    } finally {
-      setConfirmModal({ isOpen: false, id: null });
-    }
+    const exp = expenses.find(e => e.id === id);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Expense',
+      message: `Are you sure you want to delete this expense record for ৳${exp?.amount || 0}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteExpense(id);
+          setExpenses(expenses.filter(e => e.id !== id));
+        } catch (error) {
+          alert("Failed to delete expense.");
+        }
+      }
+    });
   };
 
   // Calculations & Filtering
@@ -280,12 +305,13 @@ const Expenses = () => {
               
               <div className={styles.formGroup}>
                 <label>Category *</label>
-                <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                  <option value="" disabled hidden>Select Category</option>
-                  {CATEGORIES.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={formData.category}
+                  onChange={val => setFormData({...formData, category: val})}
+                  options={CATEGORIES}
+                  placeholder="Select Category"
+                  required
+                />
               </div>
 
               <div className={styles.formGroup}>
@@ -311,12 +337,15 @@ const Expenses = () => {
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title="Delete Expense"
-        message="Are you sure you want to delete this expense record? This action cannot be undone."
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={() => {
+          if (confirmModal.onConfirm) confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
     </div>
   );

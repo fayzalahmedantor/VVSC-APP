@@ -9,7 +9,14 @@ const Suppliers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    isDanger: true,
+    onConfirm: null
+  });
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,24 +55,39 @@ const Suppliers = () => {
   };
 
   const handleOpenModal = (supplier = null) => {
+    const openForm = () => {
+      if (supplier) {
+        setEditingSupplier(supplier);
+        setFormData({
+          name: supplier.name,
+          companyName: supplier.companyName || '',
+          phone: supplier.phone,
+          address: supplier.address || '',
+          totalPurchase: supplier.totalPurchase || 0,
+          paidAmount: supplier.paidAmount || 0,
+          dueBalance: supplier.dueBalance || 0
+        });
+      } else {
+        setEditingSupplier(null);
+        setFormData({
+          name: '', companyName: '', phone: '', address: '', totalPurchase: 0, paidAmount: 0, dueBalance: 0
+        });
+      }
+      setIsModalOpen(true);
+    };
+
     if (supplier) {
-      setEditingSupplier(supplier);
-      setFormData({
-        name: supplier.name,
-        companyName: supplier.companyName || '',
-        phone: supplier.phone,
-        address: supplier.address || '',
-        totalPurchase: supplier.totalPurchase || 0,
-        paidAmount: supplier.paidAmount || 0,
-        dueBalance: supplier.dueBalance || 0
+      setConfirmModal({
+        isOpen: true,
+        title: 'Edit Supplier',
+        message: `Are you sure you want to edit supplier "${supplier.name}"?`,
+        confirmText: 'Edit',
+        isDanger: false,
+        onConfirm: openForm
       });
     } else {
-      setEditingSupplier(null);
-      setFormData({
-        name: '', companyName: '', phone: '', address: '', totalPurchase: 0, paidAmount: 0, dueBalance: 0
-      });
+      openForm();
     }
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -92,20 +114,22 @@ const Suppliers = () => {
   };
 
   const handleDelete = (id) => {
-    setConfirmModal({ isOpen: true, id });
-  };
-
-  const executeDelete = async () => {
-    const id = confirmModal.id;
-    if (!id) return;
-    try {
-      await deleteSupplier(id);
-      setSuppliers(suppliers.filter(s => s.id !== id));
-    } catch (error) {
-      alert("Failed to delete supplier.");
-    } finally {
-      setConfirmModal({ isOpen: false, id: null });
-    }
+    const supplier = suppliers.find(s => s.id === id);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Supplier',
+      message: `Are you sure you want to delete supplier "${supplier?.name || ''}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteSupplier(id);
+          setSuppliers(suppliers.filter(s => s.id !== id));
+        } catch (error) {
+          alert("Failed to delete supplier.");
+        }
+      }
+    });
   };
 
   // Due Payment Logic
@@ -339,12 +363,15 @@ const Suppliers = () => {
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title="Delete Supplier"
-        message="Are you sure you want to delete this supplier? This action cannot be undone."
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={() => {
+          if (confirmModal.onConfirm) confirmModal.onConfirm();
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
     </div>
   );
