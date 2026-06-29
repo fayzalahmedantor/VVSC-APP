@@ -50,7 +50,7 @@ const Track = () => {
           setError('Invalid tracking ID. No repair job found.');
         }
 
-        const shopRef = doc(db, 'settings', 'shop_profile');
+        const shopRef = doc(db, 'settings', 'shopProfile');
         const shopSnap = await getDoc(shopRef);
         if (shopSnap.exists()) {
           setShopProfile(shopSnap.data());
