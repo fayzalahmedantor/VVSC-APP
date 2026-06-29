@@ -108,20 +108,22 @@ const Track = () => {
 
         {/* ─── Status Hero ─── */}
         <div className={styles.statusHero} style={{ background: statusMeta.bg }}>
-          <div className={styles.statusIconWrap} style={{ background: statusMeta.color + '20', border: `2px solid ${statusMeta.color}30` }}>
-            <StatusIcon size={32} color={statusMeta.color} strokeWidth={2} />
+          <div className={styles.statusIconWrap} style={{ background: statusMeta.color + '22', border: `2px solid ${statusMeta.color}30` }}>
+            <StatusIcon size={26} color={statusMeta.color} strokeWidth={2.2} />
           </div>
-          <div className={styles.statusLabel} style={{ color: statusMeta.color }}>
-            {statusMeta.label}
-          </div>
-          <div className={styles.statusSub}>
-            {isCancelled
-              ? 'We\'re sorry, your repair was cancelled.'
-              : customer.status === 'Delivery'
-              ? 'Your device has been delivered.'
-              : customer.status === 'Complete'
-              ? 'Your device is ready for pickup!'
-              : 'Your device is being taken care of.'}
+          <div className={styles.statusTextBlock}>
+            <div className={styles.statusLabel} style={{ color: statusMeta.color }}>
+              {statusMeta.label}
+            </div>
+            <div className={styles.statusSub}>
+              {isCancelled
+                ? "Sorry, your repair was cancelled."
+                : customer.status === 'Delivery'
+                ? 'Your device has been delivered.'
+                : customer.status === 'Complete'
+                ? 'Your device is ready for pickup!'
+                : 'Your device is being taken care of.'}
+            </div>
           </div>
         </div>
 
