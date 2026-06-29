@@ -46,7 +46,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select option",
         onClick={() => !disabled && setIsOpen(!isOpen)}
         style={{
           padding: '14px 16px',
-          border: isOpen ? '1px solid var(--primary, #4A00E0)' : '1px solid rgba(0,0,0,0.1)',
+          border: isOpen ? '1px solid var(--primary, #2D2A54)' : '1px solid rgba(0,0,0,0.1)',
           borderRadius: '12px',
           background: disabled ? 'rgba(0,0,0,0.02)' : 'var(--bg-main, #f8fafc)',
           color: displayValue ? 'var(--text-main, #1e293b)' : 'var(--text-muted, #64748b)',
@@ -55,7 +55,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select option",
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: '15px',
-          boxShadow: isOpen ? '0 0 0 4px rgba(74, 0, 224, 0.1)' : 'inset 0 2px 4px rgba(0,0,0,0.02)',
+          boxShadow: isOpen ? '0 0 0 4px color-mix(in srgb, var(--primary, #2D2A54) 15%, transparent)' : 'inset 0 2px 4px rgba(0,0,0,0.02)',
           transition: 'all 0.2s',
           userSelect: 'none',
           boxSizing: 'border-box'
@@ -113,7 +113,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select option",
                     fontSize: '14px',
                     color: isSelected ? 'white' : 'var(--text-main, #1e293b)',
                     background: isSelected 
-                      ? 'linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%)' 
+                      ? 'linear-gradient(135deg, var(--primary, #2D2A54) 0%, var(--primary-light, #5A54A4) 100%)' 
                       : 'transparent',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
@@ -125,8 +125,8 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select option",
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.background = 'rgba(74, 0, 224, 0.06)';
-                      e.currentTarget.style.color = 'var(--primary, #4A00E0)';
+                      e.currentTarget.style.background = 'color-mix(in srgb, var(--primary, #2D2A54) 6%, transparent)';
+                      e.currentTarget.style.color = 'var(--primary, #2D2A54)';
                     }
                   }}
                   onMouseLeave={(e) => {
