@@ -41,6 +41,7 @@ const Customers = () => {
   const [settingsTab, setSettingsTab] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [alertFilter, setAlertFilter] = useState('');
+  const [newOption, setNewOption] = useState('');
   
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
   const [currentPage, setCurrentPage] = useState(1);
