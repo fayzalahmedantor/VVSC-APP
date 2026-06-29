@@ -173,7 +173,13 @@ const Track = () => {
         {/* ─── Footer ─── */}
         <div className={styles.footer}>
           <p>Thank you for choosing <strong>{shopProfile?.shopName || 'us'}</strong>!</p>
-          {shopProfile?.phone && <p>📞 {shopProfile.phone}</p>}
+          {shopProfile?.phone && (
+            <p>
+              <a href={`tel:${shopProfile.phone}`} className={styles.phoneLink}>
+                📞 {shopProfile.phone}
+              </a>
+            </p>
+          )}
         </div>
 
       </div>

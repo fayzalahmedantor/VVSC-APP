@@ -219,6 +219,24 @@
   color: #64748b;
 }
 
+.phoneLink {
+  color: #2d2a54;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  background: rgba(45, 42, 84, 0.08);
+  border-radius: 20px;
+  transition: background 0.2s ease;
+}
+
+.phoneLink:hover,
+.phoneLink:active {
+  background: rgba(45, 42, 84, 0.16);
+}
+
 .footer strong {
   color: #2d2a54;
 }
