@@ -9,25 +9,23 @@ import styles from './Track.module.css';
 import StatusAnimation from '../components/common/StatusAnimation';
 
 const STEPS = [
-  { key: 'Received', label: 'Received', icon: Package },
-  { key: 'Pending',  label: 'In Progress', icon: Wrench },
-  { key: 'Complete', label: 'Ready', icon: CheckCircle },
-  { key: 'Delivery', label: 'Delivered', icon: Truck },
+  { key: 'Received', label: 'Received',    icon: Package },
+  { key: 'Working',  label: 'In Progress', icon: Wrench },
+  { key: 'Complete', label: 'Ready',       icon: CheckCircle },
+  { key: 'Delivery', label: 'Delivered',   icon: Truck },
 ];
 
 const STATUS_ORDER = {
   Received: 0,
-  Pending: 1,
-  Running: 1,
+  Working:  1,
   Complete: 2,
   Delivery: 3,
-  Cancel: -1,
+  Cancel:   -1,
 };
 
 const STATUS_META = {
   Received: { label: 'Received',    color: '#f59e0b', bg: '#fffbeb', icon: Package },
-  Pending:  { label: 'In Progress', color: '#6366f1', bg: '#eef2ff', icon: Wrench },
-  Running:  { label: 'In Progress', color: '#6366f1', bg: '#eef2ff', icon: Wrench },
+  Working:  { label: 'In Progress', color: '#6366f1', bg: '#eef2ff', icon: Wrench },
   Complete: { label: 'Ready',       color: '#10b981', bg: '#ecfdf5', icon: CheckCircle },
   Delivery: { label: 'Delivered',   color: '#3b82f6', bg: '#eff6ff', icon: Truck },
   Cancel:   { label: 'Cancelled',   color: '#ef4444', bg: '#fef2f2', icon: XCircle },

@@ -249,8 +249,7 @@ const CancelledAnim = () => (
 /* ─── Main export ─── */
 const STATUS_ANIM = {
   Received: ReceivedAnim,
-  Pending:  InProgressAnim,
-  Running:  InProgressAnim,
+  Working:  InProgressAnim,
   Complete: ReadyAnim,
   Delivery: DeliveryAnim,
   Cancel:   CancelledAnim,
