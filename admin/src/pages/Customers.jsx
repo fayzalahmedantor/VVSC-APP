@@ -254,8 +254,8 @@ const Customers = () => {
       if (editingCustomer) {
         await updateCustomer(editingCustomer.id, dataToSave);
       } else {
-        await addCustomer(dataToSave);
-        triggerAutomation(dataToSave, 'received');
+        const savedCustomer = await addCustomer(dataToSave);
+        triggerAutomation(savedCustomer, 'received');
       }
       
       await fetchCustomers();
