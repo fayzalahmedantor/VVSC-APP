@@ -62,6 +62,9 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
         <NavLink onClick={closeSidebar} to="/due" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
           <AlertCircle /> <span>Due</span>
         </NavLink>
+        <NavLink onClick={closeSidebar} to="/loans" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+          <Wallet size={20} /> <span>My Loans</span>
+        </NavLink>
         <NavLink onClick={closeSidebar} to="/loyalty" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
           <Star /> <span>Loyalty</span>
         </NavLink>

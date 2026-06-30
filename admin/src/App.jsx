@@ -13,6 +13,7 @@ import Settings from './pages/Settings';
 import SmsSettings from './pages/SmsSettings';
 import Expenses from './pages/Expenses';
 import Loyalty from './pages/Loyalty';
+import Loans from './pages/Loans';
 import Track from './pages/Track';
 import PrivateRoute from './components/layout/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -34,6 +35,7 @@ function App() {
             <Route path="expenses" element={<PrivateRoute adminOnly={true}><Expenses /></PrivateRoute>} />
             <Route path="suppliers" element={<PrivateRoute adminOnly={true}><Suppliers /></PrivateRoute>} />
             <Route path="loyalty" element={<Loyalty />} />
+            <Route path="loans" element={<Loans />} />
             <Route path="report" element={<PrivateRoute adminOnly={true}><Report /></PrivateRoute>} />
             <Route path="settings" element={<PrivateRoute adminOnly={true}><Settings /></PrivateRoute>} />
             <Route path="sms-settings" element={<PrivateRoute adminOnly={true}><SmsSettings /></PrivateRoute>} />

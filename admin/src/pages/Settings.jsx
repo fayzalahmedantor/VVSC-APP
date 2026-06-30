@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { getShopProfile, updateShopProfile } from '../services/settingsService';
+import { getShopProfile, updateShopProfile, getLoanPassword, updateLoanPassword } from '../services/settingsService';
 import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
 import { seedDatabase } from '../utils/seeder';
-import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star } from 'lucide-react';
+import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star, Lock } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
@@ -29,8 +29,14 @@ const Settings = () => {
     loyaltyMinRedeem: 50,
     loyaltyTierPlatinum: 200,
     loyaltyTierGold: 51,
+    loyaltyTierGold: 51,
     loyaltyEnableSelfRedeem: true
   });
+
+  const [newLoanPassword, setNewLoanPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentSavedPassword, setCurrentSavedPassword] = useState('');
 
   const [employees, setEmployees] = useState([]);
   const [newEmployee, setNewEmployee] = useState({ name: '', email: '', password: '' });
@@ -40,12 +46,14 @@ const Settings = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [profileData, staffData] = await Promise.all([
+        const [profileData, staffData, passData] = await Promise.all([
           getShopProfile(),
-          getEmployees()
+          getEmployees(),
+          getLoanPassword()
         ]);
         setProfile(profileData);
         setEmployees(staffData);
+        setCurrentSavedPassword(passData || '');
       } catch (e) {
         console.error(e);
       }
@@ -166,6 +174,9 @@ const Settings = () => {
         </button>
         <button className={`${styles.tabBtn} ${activeTab === 'staff' ? styles.active : ''}`} onClick={() => setActiveTab('staff')}>
           <Users size={18} /> Staff
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'security' ? styles.active : ''}`} onClick={() => setActiveTab('security')}>
+          <Lock size={18} /> Security
         </button>
       </div>
 
@@ -479,6 +490,81 @@ const Settings = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* TAB 5: SECURITY */}
+        {activeTab === 'security' && (
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            
+            if (currentSavedPassword && oldPassword !== currentSavedPassword) {
+              alert("Old password does not match!");
+              return;
+            }
+            if (newLoanPassword !== confirmPassword) {
+              alert("New password and confirm password do not match!");
+              return;
+            }
+
+            setSaving(true);
+            try {
+              await updateLoanPassword(newLoanPassword);
+              setCurrentSavedPassword(newLoanPassword);
+              setOldPassword('');
+              setNewLoanPassword('');
+              setConfirmPassword('');
+              alert("Security settings saved!");
+            } catch (err) {
+              alert("Failed to save security settings.");
+            }
+            setSaving(false);
+          }} className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Security Settings</h3>
+            
+            {currentSavedPassword && (
+              <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
+                <label>Old Password *</label>
+                <input 
+                  type="password" 
+                  value={oldPassword} 
+                  onChange={e => setOldPassword(e.target.value)} 
+                  placeholder="Enter current password" 
+                  required
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                />
+              </div>
+            )}
+
+            <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
+              <label>{currentSavedPassword ? 'New Password' : 'Set Password for "My Loans"'}</label>
+              <input 
+                type="password" 
+                value={newLoanPassword} 
+                onChange={e => setNewLoanPassword(e.target.value)} 
+                placeholder="Enter new password (leave empty to disable)" 
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Confirm Password</label>
+              <input 
+                type="password" 
+                value={confirmPassword} 
+                onChange={e => setConfirmPassword(e.target.value)} 
+                placeholder="Re-enter new password" 
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+              />
+            </div>
+            
+            <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '16px' }}>If set, this password is required to access the "My Loans" page. Keep it safe!</small>
+
+            <div className={styles.actions} style={{ marginTop: '24px' }}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                <Save size={18} /> {saving ? 'Saving...' : 'Update Password'}
+              </button>
+            </div>
+          </form>
         )}
 
       </div>

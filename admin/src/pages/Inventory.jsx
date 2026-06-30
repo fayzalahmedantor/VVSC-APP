@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, X, Settings as SettingsIcon, PackagePlus, History, ShoppingCart } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, addInventoryHistory, getInventoryHistory } from '../services/inventoryService';
 import { getDropdownSettings, updateDropdownSetting } from '../services/settingsService';
+import { getMechanics, updateMechanic } from '../services/mechanicService';
 import ConfirmModal from '../components/common/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
 import CustomSelect from '../components/ui/CustomSelect';
@@ -51,6 +52,10 @@ const Inventory = () => {
   
   const [sellProduct, setSellProduct] = useState(null);
   const [sellQty, setSellQty] = useState('');
+  const [sellMethod, setSellMethod] = useState('Cash'); // Cash or Due
+  const [sellMechanic, setSellMechanic] = useState(''); // Selected mechanic id
+  const [sellAdvance, setSellAdvance] = useState(''); // Optional advance paid
+  const [mechanicsList, setMechanicsList] = useState([]);
   
   const [isSaving, setIsSaving] = useState(false);
   
@@ -78,11 +83,13 @@ const Inventory = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [data, settings] = await Promise.all([
+      const [data, settings, mechs] = await Promise.all([
         getProducts(),
-        getDropdownSettings()
+        getDropdownSettings(),
+        getMechanics()
       ]);
       setProducts(data);
+      setMechanicsList(mechs);
       let categories = [];
       if (Array.isArray(settings.productCategories)) {
         categories = settings.productCategories;
@@ -264,6 +271,9 @@ const Inventory = () => {
     }
     setSellProduct(product);
     setSellQty('');
+    setSellMethod('Cash');
+    setSellMechanic('');
+    setSellAdvance('');
     setIsSellModalOpen(true);
   };
 
@@ -275,12 +285,42 @@ const Inventory = () => {
       alert(`Cannot sell more than available stock (${sellProduct.stock})`);
       return;
     }
+
+    if (sellMethod === 'Due' && !sellMechanic) {
+      alert("Please select a Mechanic to sell on Due.");
+      return;
+    }
     
     try {
       setIsSaving(true);
       const newStock = Number(sellProduct.stock) - Number(sellQty);
       const totalPrice = Number(sellQty) * Number(sellProduct.sellPrice);
       
+      let descriptionSuffix = ` on Cash`;
+      
+      if (sellMethod === 'Due') {
+        const mechanic = mechanicsList.find(m => m.id === sellMechanic);
+        if (mechanic) {
+          const advanceVal = Number(sellAdvance) || 0;
+          if (advanceVal > totalPrice) {
+            alert("Advance cannot be greater than Total Price.");
+            setIsSaving(false);
+            return;
+          }
+          const addedDue = totalPrice - advanceVal;
+          const oldDue = Number(mechanic.dueBalance) || 0;
+          const oldAdvance = Number(mechanic.advance) || 0;
+          const oldTotalBill = Number(mechanic.totalBill) || 0;
+
+          await updateMechanic(mechanic.id, {
+            dueBalance: oldDue + addedDue,
+            advance: oldAdvance + advanceVal,
+            totalBill: oldTotalBill + totalPrice
+          });
+          descriptionSuffix = ` on Due to ${mechanic.name}`;
+        }
+      }
+
       await updateProduct(sellProduct.id, { stock: newStock });
       await addInventoryHistory({
         productId: sellProduct.id,
@@ -289,7 +329,9 @@ const Inventory = () => {
         quantityChange: -Number(sellQty),
         newStock: newStock,
         totalPrice: totalPrice,
-        description: `Sold ${sellQty} ${sellProduct.unit || 'Pcs'} at ৳${sellProduct.sellPrice} each`
+        paymentMethod: sellMethod,
+        mechanicId: sellMechanic || null,
+        description: `Sold ${sellQty} ${sellProduct.unit || 'Pcs'} at ৳${sellProduct.sellPrice} each${descriptionSuffix}`
       });
       
       await fetchData();
@@ -704,6 +746,51 @@ const Inventory = () => {
                   autoFocus
                 />
               </div>
+
+              <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                <label>Payment Method</label>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, cursor: 'pointer' }}>
+                    <input type="radio" name="sellMethod" value="Cash" checked={sellMethod === 'Cash'} onChange={() => { setSellMethod('Cash'); setSellMechanic(''); setSellAdvance(''); }} />
+                    Cash (Nogod)
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, cursor: 'pointer' }}>
+                    <input type="radio" name="sellMethod" value="Due" checked={sellMethod === 'Due'} onChange={() => setSellMethod('Due')} />
+                    Due (Mechanics Only)
+                  </label>
+                </div>
+              </div>
+
+              {sellMethod === 'Due' && (
+                <>
+                  <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                    <label>Select Mechanic *</label>
+                    <select 
+                      value={sellMechanic} 
+                      onChange={(e) => setSellMechanic(e.target.value)} 
+                      required
+                      style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', background: 'var(--bg-main)', width: '100%', fontSize: '14px', fontFamily: 'var(--font-family)' }}
+                    >
+                      <option value="">-- Choose Mechanic --</option>
+                      {mechanicsList.map(m => (
+                        <option key={m.id} value={m.id}>{m.name} {m.shopName ? `(${m.shopName})` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                    <label>Advance Paid (৳)</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={sellAdvance} 
+                      onChange={(e) => setSellAdvance(e.target.value)} 
+                      onWheel={e => e.target.blur()}
+                      placeholder="Optional. E.g., 500" 
+                    />
+                  </div>
+                </>
+              )}
               
               {sellQty && Number(sellQty) > 0 && Number(sellQty) <= sellProduct.stock && (
                 <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(0, 212, 170, 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

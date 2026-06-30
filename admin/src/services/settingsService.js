@@ -83,3 +83,31 @@ export const updateShopProfile = async (profileData) => {
     throw error;
   }
 };
+
+// --- Security / Password Settings ---
+
+export const getLoanPassword = async () => {
+  try {
+    const docRef = doc(db, 'settings', 'security');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists() && docSnap.data().loanPassword) {
+      return docSnap.data().loanPassword;
+    } else {
+      return ''; // No password set initially
+    }
+  } catch (error) {
+    console.error('Error fetching loan password:', error);
+    return '';
+  }
+};
+
+export const updateLoanPassword = async (newPassword) => {
+  try {
+    const docRef = doc(db, 'settings', 'security');
+    await setDoc(docRef, { loanPassword: newPassword }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error('Error updating loan password:', error);
+    throw error;
+  }
+};

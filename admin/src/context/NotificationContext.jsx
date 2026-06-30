@@ -8,7 +8,13 @@ const NotificationContext = createContext();
 export const useNotification = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState([]);
+  const [customerNotifs, setCustomerNotifs] = useState([]);
+  const [loanNotifs, setLoanNotifs] = useState([]);
+  const notifications = [...customerNotifs, ...loanNotifs].sort((a,b) => {
+    if(!a.date || !b.date) return 0;
+    return new Date(b.date) - new Date(a.date);
+  });
+  
   const [unreadCount, setUnreadCount] = useState(0);
   const previousCountRef = useRef(0);
 
@@ -103,7 +109,7 @@ export const NotificationProvider = ({ children }) => {
         });
       }
 
-      setNotifications(newNotifs);
+      setCustomerNotifs(newNotifs);
       
       if (newNotifs.length > previousCountRef.current) {
         playNotificationSound();
@@ -114,7 +120,35 @@ export const NotificationProvider = ({ children }) => {
       console.error("Snapshot error:", error);
     });
 
-    return () => unsubscribe();
+    // Listen to Personal Loans
+    const qLoan = query(collection(db, 'personalLoans'));
+    const unsubLoan = onSnapshot(qLoan, (snapshot) => {
+      const today = new Date().toISOString().split('T')[0];
+      const newLNotifs = [];
+      snapshot.forEach(doc => {
+        const l = { id: doc.id, ...doc.data() };
+        if (Number(l.remainingDue || 0) > 0 && l.nextDueDate) {
+          if (l.nextDueDate <= today) {
+            newLNotifs.push({
+              id: `loan_${l.id}`,
+              type: 'personal_loan',
+              title: 'Personal Loan Due',
+              message: `Payment/Installment of ৳${l.remainingDue} for ${l.name} is due today or overdue.`,
+              date: l.nextDueDate,
+              isRead: false
+            });
+          }
+        }
+      });
+      setLoanNotifs(newLNotifs);
+      
+      // We can also trigger sound here, but let's rely on overall count in a generic effect if needed.
+    });
+
+    return () => {
+      unsubscribe();
+      unsubLoan();
+    };
   }, [playNotificationSound]);
 
   const markAllAsRead = () => {

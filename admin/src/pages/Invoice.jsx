@@ -21,7 +21,7 @@ const Invoice = ({ customer, shopProfile, onClose }) => {
     window.print();
   };
 
-  return (
+  const invoiceContent = (
     <div className={styles.printOnly}>
       <div className={styles.screenActions}>
         <button className={styles.btnPrint} onClick={handlePrint}>Print Invoice</button>
