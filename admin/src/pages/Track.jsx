@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { getLoyaltySettings } from '../services/settingsService';
-import { getSmsSettings, sendSMS } from '../services/messagingService';
 import {
-  Package, CheckCircle, Truck, ShieldAlert, Wrench, XCircle, Store, Gift
+  Package, CheckCircle, Truck, ShieldAlert, Wrench, XCircle, Store
 } from 'lucide-react';
 import styles from './Track.module.css';
 import StatusAnimation from '../components/common/StatusAnimation';
@@ -39,9 +37,6 @@ const Track = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [shopProfile, setShopProfile] = useState(null);
-  const [loyalty, setLoyalty] = useState(null);
-  const [pointsData, setPointsData] = useState(null);
-  const [isRedeeming, setIsRedeeming] = useState(false);
 
   useEffect(() => {
     const fetchTrackingData = async () => {
@@ -59,28 +54,6 @@ const Track = () => {
         if (shopSnap.exists()) {
           setShopProfile(shopSnap.data());
         }
-
-        const lSettings = await getLoyaltySettings();
-        setLoyalty(lSettings);
-
-        // Fetch all tickets for this phone to calculate points
-        if (docSnap.exists() && docSnap.data().phone && lSettings.enableSelfRedeem) {
-          const q = query(collection(db, 'customers'), where('phone', '==', docSnap.data().phone));
-          const querySnapshot = await getDocs(q);
-          let totalEarned = 0;
-          let totalRedeemed = 0;
-          querySnapshot.forEach(d => {
-            const cData = d.data();
-            totalEarned += Math.floor(Number(cData.totalBill || 0) / lSettings.spendPerPoint);
-            totalRedeemed += Number(cData.redeemedPoints || 0);
-          });
-          setPointsData({
-            earned: totalEarned,
-            redeemed: totalRedeemed,
-            available: Math.max(0, totalEarned - totalRedeemed)
-          });
-        }
-
       } catch (err) {
         console.error(err);
         setError('Failed to fetch tracking information.');
@@ -91,56 +64,6 @@ const Track = () => {
 
     if (id) fetchTrackingData();
   }, [id]);
-
-  const handleRedeem = async () => {
-    if (!pointsData || pointsData.available < loyalty.minRedeemPoints) return;
-    
-    // We will redeem ALL available points or up to the dueBalance
-    const discountPerPoint = loyalty.discountPerPoint;
-    const maxPointsNeeded = Math.ceil(customer.dueBalance / discountPerPoint);
-    const pointsToUse = Math.min(pointsData.available, maxPointsNeeded);
-    
-    if (pointsToUse <= 0) {
-      alert("No points needed. Your due balance is 0.");
-      return;
-    }
-
-    const discountAmount = pointsToUse * discountPerPoint;
-    const newDueBalance = Math.max(0, customer.dueBalance - discountAmount);
-
-    if (window.confirm(`Are you sure you want to use ${pointsToUse} points for a discount of ৳${discountAmount}?`)) {
-      setIsRedeeming(true);
-      try {
-        const docRef = doc(db, 'customers', id);
-        const currentRedeemed = Number(customer.redeemedPoints || 0);
-        await updateDoc(docRef, {
-          redeemedPoints: currentRedeemed + pointsToUse,
-          dueBalance: newDueBalance
-        });
-
-        // Send SMS
-        if (customer.phone) {
-          const smsSettings = await getSmsSettings();
-          if (smsSettings?.isSmsEnabled && smsSettings?.apiUrl) {
-            const template = smsSettings?.msgRedeem || "অভিনন্দন {CustomerName}! আপনার {RedeemedPoints} পয়েন্ট রিডিম করে {DiscountAmount} টাকা ডিসকাউন্ট দেওয়া হয়েছে। আপনার বর্তমান বকেয়া বিল: {DueBalance} টাকা। ধন্যবাদ!";
-            let msg = template.replace(/{CustomerName}/g, customer.name || 'Customer');
-            msg = msg.replace(/{RedeemedPoints}/g, pointsToUse);
-            msg = msg.replace(/{DiscountAmount}/g, discountAmount);
-            msg = msg.replace(/{DueBalance}/g, newDueBalance);
-            await sendSMS(customer.phone, msg, smsSettings);
-          }
-        }
-
-        alert("Points redeemed successfully!");
-        window.location.reload();
-      } catch (error) {
-        console.error(error);
-        alert("Failed to redeem points. Please try again.");
-      } finally {
-        setIsRedeeming(false);
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -252,39 +175,6 @@ const Track = () => {
             <InfoRow label="Due Balance" value={`৳${customer.dueBalance}`} isDue />
           )}
         </div>
-
-        {/* ─── Loyalty Rewards ─── */}
-        {loyalty?.enableSelfRedeem && pointsData && pointsData.available >= loyalty.minRedeemPoints && Number(customer.dueBalance) > 0 && (
-          <div className={styles.section} style={{ background: 'var(--bg-main)', border: '1px solid #F59E0B', borderRadius: '12px' }}>
-            <div className={styles.sectionTitle} style={{ color: '#D97706', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Gift size={18} /> Loyalty Rewards
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
-              You have <strong>{pointsData.available} points</strong> available! 
-              You can redeem them for a discount.
-            </p>
-            <button 
-              onClick={handleRedeem} 
-              disabled={isRedeeming}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: '#F59E0B',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                cursor: isRedeeming ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <Gift size={18} /> {isRedeeming ? 'Applying Discount...' : `Apply Discount (1 Point = ৳${loyalty.discountPerPoint})`}
-            </button>
-          </div>
-        )}
 
         {/* ─── Footer ─── */}
         <div className={styles.footer}>

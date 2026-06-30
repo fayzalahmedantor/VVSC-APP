@@ -83,39 +83,3 @@ export const updateShopProfile = async (profileData) => {
     throw error;
   }
 };
-
-// --- Loyalty Settings ---
-
-export const defaultLoyaltySettings = {
-  spendPerPoint: 100,
-  discountPerPoint: 2,
-  minRedeemPoints: 150,
-  enableSelfRedeem: true
-};
-
-export const getLoyaltySettings = async () => {
-  try {
-    const docRef = doc(db, 'settings', 'loyaltySettings');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { ...defaultLoyaltySettings, ...docSnap.data() };
-    } else {
-      await setDoc(docRef, defaultLoyaltySettings);
-      return defaultLoyaltySettings;
-    }
-  } catch (error) {
-    console.error('Error fetching loyalty settings:', error);
-    return defaultLoyaltySettings;
-  }
-};
-
-export const updateLoyaltySettings = async (loyaltyData) => {
-  try {
-    const docRef = doc(db, 'settings', 'loyaltySettings');
-    await setDoc(docRef, loyaltyData, { merge: true });
-    return true;
-  } catch (error) {
-    console.error('Error updating loyalty settings:', error);
-    throw error;
-  }
-};
