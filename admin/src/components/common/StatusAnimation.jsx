@@ -1,5 +1,32 @@
 import React from 'react';
-import { Package, Wrench, CheckCircle, Truck, XCircle, Sparkles } from 'lucide-react';
+import { Package, CheckCircle, Truck, XCircle, Sparkles } from 'lucide-react';
+
+const SolderingIron = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Cord */}
+    <path d="M3 21s-2-1-2-3 2-2 2-2" />
+    {/* Handle base */}
+    <path d="m8 16-3 3" />
+    {/* Handle Body */}
+    <rect x="6.5" y="9.5" width="6" height="12" rx="1.5" transform="rotate(-45 9.5 15.5)" />
+    {/* Shaft */}
+    <path d="m14 11 3-3" />
+    {/* Tip */}
+    <path d="m17 8 5-5" />
+    {/* Heat/Smoke */}
+    <path d="M21 2c0-1 1-2 2-2" />
+    <path d="M23 4c1 0 2-1 2-2" />
+  </svg>
+);
 import styles from './StatusAnimation.module.css';
 
 const ANIM_MAP = {
@@ -11,7 +38,7 @@ const ANIM_MAP = {
     caption: 'Device received & securely logged'
   },
   Working: {
-    icon: Wrench,
+    icon: SolderingIron,
     color: '#6366f1',
     bg: '#eef2ff',
     animClass: styles.spinPulse,
