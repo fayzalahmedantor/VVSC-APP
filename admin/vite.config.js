@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['logo.png', 'favicon.svg'],
+      includeAssets: ['logo.png'],
       manifest: {
         name: 'VVSC APP',
         short_name: 'VVSC APP',
