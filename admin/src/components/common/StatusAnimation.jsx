@@ -1,35 +1,49 @@
 import React from 'react';
 import { Package, CheckCircle, Truck, XCircle, Sparkles } from 'lucide-react';
 
-const SolderingIron = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => (
+const MechanicCircuitBoard = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 24 24"
+    viewBox="0 0 64 64"
     fill="none"
     stroke={color}
-    strokeWidth={strokeWidth}
+    strokeWidth={strokeWidth * 2.5}
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    {/* Power Cord */}
-    <path d="M5 19 C 2 22, 1 24, 0 22" fill="none" strokeWidth="2" />
+    {/* Mechanic Head */}
+    <circle cx="32" cy="16" r="8" />
     
-    {/* Thick Handle */}
-    <line x1="5" y1="19" x2="10" y2="14" strokeWidth="6" strokeLinecap="round" />
+    {/* Mechanic Safety Goggles / Magnifier */}
+    <rect x="26" y="13" width="12" height="5" rx="2" fill="currentColor" stroke="none" />
+    <path d="M 22 15 C 26 15, 38 15, 42 15" />
     
-    {/* Collar / Heat Shield */}
-    <line x1="9" y1="12" x2="12" y2="15" strokeWidth="3" strokeLinecap="round" />
+    {/* Mechanic Shoulders / Body */}
+    <path d="M 14 40 C 14 26, 50 26, 50 40" />
+
+    {/* Hand pointing to the board */}
+    <path d="M 14 40 C 18 32, 24 38, 28 44" />
+
+    {/* Right Hand holding Soldering Iron */}
+    <path d="M 50 40 C 46 32, 40 38, 36 44" />
     
-    {/* Shaft */}
-    <line x1="10.5" y1="13.5" x2="16" y2="8" strokeWidth="2" />
+    {/* The Soldering Iron */}
+    <line x1="44" y1="30" x2="35" y2="45" strokeWidth={strokeWidth * 1.5} />
+    <line x1="46" y1="26" x2="41" y2="35" strokeWidth={strokeWidth * 3.5} />
     
-    {/* Sharp Tip (Filled) */}
-    <polygon points="15.5,7.5 22,2 17.5,9.5" fill={color} stroke="none" />
+    {/* Circuit Board (Floating slightly in front) */}
+    <rect x="8" y="44" width="48" height="16" rx="3" fill="#eef2ff" />
+    <rect x="8" y="44" width="48" height="16" rx="3" />
     
-    {/* Solder Smoke / Heat Wave */}
-    <path d="M20 7 C 21 8, 22 7, 23 6" fill="none" strokeWidth="1.5" />
-    <path d="M17 4 C 18 3, 17 2, 18 1" fill="none" strokeWidth="1.5" />
+    {/* Circuit Board Details */}
+    <rect x="14" y="48" width="8" height="8" rx="1.5" />
+    <rect x="28" y="49" width="12" height="6" rx="1.5" />
+    <circle cx="48" cy="52" r="2" />
+    <circle cx="44" cy="52" r="2" />
+    <path d="M 22 52 L 28 52" />
+    <path d="M 40 52 L 42 52" />
+    <path d="M 35 45 C 34 42, 33 42, 35 40" /> {/* Smoke */}
   </svg>
 );
 import styles from './StatusAnimation.module.css';
@@ -43,7 +57,7 @@ const ANIM_MAP = {
     caption: 'Device received & securely logged'
   },
   Working: {
-    icon: SolderingIron,
+    icon: MechanicCircuitBoard,
     color: '#6366f1',
     bg: '#eef2ff',
     animClass: styles.spinPulse,
