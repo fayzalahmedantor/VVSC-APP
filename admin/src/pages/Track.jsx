@@ -295,7 +295,7 @@ const Track = () => {
           
           {/* LOYALTY SECTION */}
           <div style={{ marginTop: '20px', padding: '16px', background: '#FEF3C7', borderRadius: '12px', border: '1px solid #FDE68A' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold' }}>
                 <Star size={18} fill="currentColor" />
                 Your Loyalty Points
@@ -313,7 +313,7 @@ const Track = () => {
                 Online point redemption is currently disabled.
               </div>
             ) : customer.status === 'Complete' ? (
-              <form onSubmit={handleRedeemSubmit} style={{ display: 'flex', gap: '8px' }}>
+              <form onSubmit={handleRedeemSubmit} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <input 
                   type="number" 
                   min={minRedeem} 
@@ -322,9 +322,9 @@ const Track = () => {
                   onChange={e => setRedeemInput(e.target.value)}
                   placeholder="Points"
                   required
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #FCD34D', outline: 'none' }}
+                  style={{ flex: 1, minWidth: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #FCD34D', outline: 'none' }}
                 />
-                <button type="submit" disabled={isRedeeming || customerPoints < minRedeem} style={{ padding: '10px 16px', background: '#D97706', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: customerPoints >= minRedeem ? 'pointer' : 'not-allowed', opacity: customerPoints >= minRedeem ? 1 : 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button type="submit" disabled={isRedeeming || customerPoints < minRedeem} style={{ flexShrink: 0, padding: '10px 16px', background: '#D97706', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: customerPoints >= minRedeem ? 'pointer' : 'not-allowed', opacity: customerPoints >= minRedeem ? 1 : 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Gift size={16} /> {isRedeeming ? '...' : 'Redeem'}
                 </button>
               </form>
