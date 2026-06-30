@@ -14,7 +14,8 @@ export const defaultSmsSettings = {
   msgCancelled: 'প্রিয় {CustomerName}, আমরা আন্তরিকভাবে দুঃখিত! কিছু যান্ত্রিক বা পার্টস সমস্যার কারণে আপনার {DeviceType} টি মেরামত করা সম্ভব হয়নি। অনুগ্রহ করে সময় করে ডিভাইসটি আমাদের শপ থেকে নিয়ে যাবেন। আপনার সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।',
   msgWhatsApp: '*{ShopName}*\n\nHello {CustomerName},\nHere is your repair summary:\n\n*Device:* {DeviceType}\n*Issue:* {Problem}\n*Total Bill:* ৳{TotalBill}\n*Paid:* ৳{TotalPaid}\n*Due Balance:* ৳{DueBalance}\n*Status:* {Status}\n\nThank you!',
   msgDueReminder: 'প্রিয় {CustomerName}, আপনার {DueBalance} টাকা বকেয়া রয়েছে। অনুগ্রহ করে বকেয়া পরিশোধ করুন। ধন্যবাদ!',
-  msgFollowUp: 'প্রিয় {CustomerName}, ৬ মাস আগে আপনার {DeviceType} টি মেরামত করা হয়েছিল। আশা করি ডিভাইসটি ভালো চলছে। যেকোনো প্রয়োজনে আমাদের শপে আপনাকে স্বাগতম!'
+  msgFollowUp: 'প্রিয় {CustomerName}, ৬ মাস আগে আপনার {DeviceType} টি মেরামত করা হয়েছিল। আশা করি ডিভাইসটি ভালো চলছে। যেকোনো প্রয়োজনে আমাদের শপে আপনাকে স্বাগতম!',
+  msgRedeemed: 'অভিনন্দন! আপনি {Points} পয়েন্ট ব্যবহার করে {DiscountAmount} টাকা ছাড় পেয়েছেন। আপনার বর্তমান বিল: {TotalBill} টাকা।'
 };
 
 export const getSmsSettings = async () => {

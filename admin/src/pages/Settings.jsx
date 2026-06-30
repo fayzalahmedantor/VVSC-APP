@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile } from '../services/settingsService';
 import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
 import { seedDatabase } from '../utils/seeder';
-import { UserPlus, Trash2, Save, Store, Palette, FileText, Users } from 'lucide-react';
+import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
@@ -21,7 +21,15 @@ const Settings = () => {
     phone: '',
     address: '',
     receiptFooter: '',
-    logo: ''
+    logo: '',
+    loyaltySpendAmount: 100,
+    loyaltyEarnPoints: 1,
+    loyaltyRedeemPoints: 1,
+    loyaltyDiscountAmount: 2,
+    loyaltyMinRedeem: 50,
+    loyaltyTierPlatinum: 200,
+    loyaltyTierGold: 51,
+    loyaltyEnableSelfRedeem: true
   });
 
   const [employees, setEmployees] = useState([]);
@@ -47,8 +55,11 @@ const Settings = () => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setProfile(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -149,6 +160,9 @@ const Settings = () => {
         </button>
         <button className={`${styles.tabBtn} ${activeTab === 'receipts' ? styles.active : ''}`} onClick={() => setActiveTab('receipts')}>
           <FileText size={18} /> Receipts
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'loyalty' ? styles.active : ''}`} onClick={() => setActiveTab('loyalty')}>
+          <Star size={18} /> Loyalty
         </button>
         <button className={`${styles.tabBtn} ${activeTab === 'staff' ? styles.active : ''}`} onClick={() => setActiveTab('staff')}>
           <Users size={18} /> Staff
@@ -264,6 +278,151 @@ const Settings = () => {
             <div className={styles.actions}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 <Save size={18} /> {saving ? 'Saving...' : 'Save Configuration'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* TAB: LOYALTY */}
+        {activeTab === 'loyalty' && (
+          <form onSubmit={handleSubmit} className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Loyalty & Rewards Configuration</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Configure how customers earn points and the discount value per point.</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              
+              {/* Earn Rule */}
+              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Points Earning Rule</h4>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
+                    <label>Spend Amount (৳)</label>
+                    <input 
+                      type="number" 
+                      name="loyaltySpendAmount" 
+                      value={profile.loyaltySpendAmount || 100} 
+                      onChange={handleChange} 
+                      min="1" 
+                      required 
+                    />
+                  </div>
+                  <span style={{ marginTop: '24px', fontWeight: 'bold', color: 'var(--text-muted)' }}>=</span>
+                  <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
+                    <label>Earn Points</label>
+                    <input 
+                      type="number" 
+                      name="loyaltyEarnPoints" 
+                      value={profile.loyaltyEarnPoints || 1} 
+                      onChange={handleChange} 
+                      min="1" 
+                      required 
+                    />
+                  </div>
+                </div>
+                <small style={{ display: 'block', marginTop: '12px', color: 'var(--text-muted)' }}>
+                  Example: If set to 100 ৳ = 1 Point, a 500৳ bill gives 5 points.
+                </small>
+              </div>
+
+              {/* Redeem Rule */}
+              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Points Redemption Rule</h4>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
+                    <label>Redeem Points</label>
+                    <input 
+                      type="number" 
+                      name="loyaltyRedeemPoints" 
+                      value={profile.loyaltyRedeemPoints || 1} 
+                      onChange={handleChange} 
+                      min="1" 
+                      required 
+                    />
+                  </div>
+                  <span style={{ marginTop: '24px', fontWeight: 'bold', color: 'var(--text-muted)' }}>=</span>
+                  <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
+                    <label>Discount Value (৳)</label>
+                    <input 
+                      type="number" 
+                      name="loyaltyDiscountAmount" 
+                      value={profile.loyaltyDiscountAmount || 2} 
+                      onChange={handleChange} 
+                      min="0.1" 
+                      step="0.1"
+                      required 
+                    />
+                  </div>
+                </div>
+                <small style={{ display: 'block', marginTop: '12px', color: 'var(--text-muted)' }}>
+                  Example: If set to 1 Point = 2 ৳, redeeming 50 points gives 100৳ discount.
+                </small>
+              </div>
+
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginTop: '20px' }}>
+              <div className={styles.formGroup}>
+                <label>Minimum Points to Redeem</label>
+                <input 
+                  type="number" 
+                  name="loyaltyMinRedeem" 
+                  value={profile.loyaltyMinRedeem || 50} 
+                  onChange={handleChange} 
+                  min="1" 
+                  required 
+                />
+                <small style={{ color: 'var(--text-muted)' }}>The minimum points a customer must have to redeem.</small>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Platinum Badge Threshold (Points)</label>
+                <input 
+                  type="number" 
+                  name="loyaltyTierPlatinum" 
+                  value={profile.loyaltyTierPlatinum || 200} 
+                  onChange={handleChange} 
+                  min="1" 
+                  required 
+                />
+                <small style={{ color: 'var(--text-muted)' }}>Points required to reach Platinum tier.</small>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Gold Badge Threshold (Points)</label>
+                <input 
+                  type="number" 
+                  name="loyaltyTierGold" 
+                  value={profile.loyaltyTierGold || 51} 
+                  onChange={handleChange} 
+                  min="1" 
+                  required 
+                />
+                <small style={{ color: 'var(--text-muted)' }}>Points required to reach Gold tier.</small>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px', background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', textAlign: 'left' }}>
+              <input 
+                type="checkbox" 
+                id="loyaltyEnableSelfRedeem" 
+                name="loyaltyEnableSelfRedeem" 
+                checked={profile.loyaltyEnableSelfRedeem !== false} 
+                onChange={handleChange} 
+                style={{ width: '18px', height: '18px', cursor: 'pointer', marginTop: '2px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <label htmlFor="loyaltyEnableSelfRedeem" style={{ display: 'block', margin: '0 0 4px 0', fontWeight: 600, cursor: 'pointer', color: 'var(--text-main)', fontSize: '15px' }}>
+                  Allow Customer Self-Redeem
+                </label>
+                <div style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.4' }}>
+                  If enabled, customers can redeem points directly from their tracking link.
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.actions} style={{ marginTop: '24px' }}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                <Save size={18} /> {saving ? 'Saving...' : 'Save Settings'}
               </button>
             </div>
           </form>

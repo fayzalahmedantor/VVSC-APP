@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Star, Minus, X } from 'lucide-react';
-import { getCustomers, updateCustomer } from '../services/customerService';
+import { Search, Star, Minus, X, Award, Clock } from 'lucide-react';
+import { getCustomers, updateCustomer, getCustomerTier, getLoyaltyHistoryByPhone } from '../services/customerService';
+import { getShopProfile } from '../services/settingsService';
 import styles from './Loyalty.module.css';
 
 const Loyalty = () => {
@@ -8,9 +9,12 @@ const Loyalty = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const [modalState, setModalState] = useState({ isOpen: false, type: '', customer: null });
-  const [pointsInput, setPointsInput] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [modalState, setModalState] = useState({ isOpen: false, customer: null });
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  
+  const [pointRate, setPointRate] = useState(100);
+  const [discountRate, setDiscountRate] = useState(2);
 
   useEffect(() => {
     fetchCustomers();
@@ -19,7 +23,15 @@ const Loyalty = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const data = await getCustomers();
+      const [data, profile] = await Promise.all([
+        getCustomers(),
+        getShopProfile()
+      ]);
+      
+      const spendAmt = profile?.loyaltySpendAmount || 100;
+      const earnPts = profile?.loyaltyEarnPoints || 1;
+      const redeemPts = profile?.loyaltyRedeemPoints || 1;
+      const discountAmt = profile?.loyaltyDiscountAmount || 2;
       
       // Group by phone
       const phoneGroups = {};
@@ -34,16 +46,20 @@ const Loyalty = () => {
             redeemed: 0
           };
         }
-        // Total points earned: totalBill / 100
-        phoneGroups[c.phone].earned += Math.floor(Number(c.totalBill || 0) / 100);
+        phoneGroups[c.phone].earned += Math.floor((Number(c.totalBill || 0) / spendAmt) * earnPts);
         phoneGroups[c.phone].redeemed += Number(c.redeemedPoints || 0);
       });
 
-      const groupedArr = Object.values(phoneGroups).map(g => ({
-        ...g,
-        points: Math.max(0, g.earned - g.redeemed),
-        discountValue: Math.max(0, g.earned - g.redeemed) * 2 // 1 Point = 2 TK
-      })).filter(g => g.earned > 0).sort((a, b) => b.points - a.points);
+      const groupedArr = Object.values(phoneGroups).map(g => {
+        const tier = getCustomerTier(g.earned, profile);
+        const availablePoints = Math.max(0, g.earned - g.redeemed);
+        return {
+          ...g,
+          tier,
+          points: availablePoints,
+          discountValue: (availablePoints / redeemPts) * discountAmt
+        };
+      }).filter(g => g.earned > 0).sort((a, b) => b.points - a.points);
       
       setCustomers(groupedArr);
     } catch (error) {
@@ -53,47 +69,22 @@ const Loyalty = () => {
     }
   };
 
-  const handleOpenModal = (customer) => {
-    setModalState({ isOpen: true, type: 'redeem', customer });
-    setPointsInput('');
+  const handleOpenModal = async (customer) => {
+    setModalState({ isOpen: true, customer });
+    setHistoryLoading(true);
+    try {
+      const hist = await getLoyaltyHistoryByPhone(customer.phone);
+      setHistory(hist);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
   const handleCloseModal = () => {
-    setModalState({ isOpen: false, type: '', customer: null });
-    setPointsInput('');
-  };
-
-  const handleSavePoints = async (e) => {
-    e.preventDefault();
-    const { customer } = modalState;
-    const pointsToApply = Number(pointsInput);
-    
-    if (pointsToApply <= 0) return;
-
-    try {
-      setIsSaving(true);
-      
-      if (pointsToApply > customer.points) {
-        alert("Customer does not have enough points!");
-        setIsSaving(false);
-        return;
-      }
-
-      // Fetch the actual customer doc to update redeemed points
-      // Note: We just update ONE of their tickets to keep track of redeemed points
-      const data = await getCustomers();
-      const actualDoc = data.find(c => c.id === customer.id);
-      const currentRedeemed = Number(actualDoc.redeemedPoints || 0);
-      
-      await updateCustomer(customer.id, { redeemedPoints: currentRedeemed + pointsToApply });
-      
-      await fetchCustomers();
-      handleCloseModal();
-    } catch (error) {
-      alert("Failed to update points.");
-    } finally {
-      setIsSaving(false);
-    }
+    setModalState({ isOpen: false, customer: null });
+    setHistory([]);
   };
 
   const filteredCustomers = customers.filter(c => 
@@ -135,11 +126,20 @@ const Loyalty = () => {
               ) : (
                 filteredCustomers.map(c => (
                   <tr key={c.id}>
-                    <td style={{ fontWeight: 500 }}>{c.name}</td>
+                    <td>
+                      <div style={{ fontWeight: 500, color: 'var(--text-main)', marginBottom: '4px' }}>{c.name}</div>
+                      <div style={{ 
+                        display: 'inline-flex', alignItems: 'center', gap: '4px', 
+                        padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600,
+                        background: c.tier.bg, color: c.tier.color
+                      }}>
+                        <Award size={12} /> {c.tier.label}
+                      </div>
+                    </td>
                     <td style={{ color: 'var(--text-muted)' }}>{c.phone}</td>
                     <td>
-                      <div className={styles.pointsBadge}>
-                        <Star size={16} fill="currentColor" /> {c.points}
+                      <div className={styles.pointsBadge} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF3C7', color: '#D97706', padding: '4px 10px', borderRadius: '16px', fontWeight: 'bold', fontSize: '13px' }}>
+                        <Star size={14} fill="currentColor" /> {c.points}
                       </div>
                     </td>
                     <td>
@@ -148,12 +148,11 @@ const Loyalty = () => {
                     <td>
                       <div className={styles.actionBtns}>
                         <button 
-                          className={`${styles.btnAction} ${styles.btnRedeem}`} 
+                          className="btn" 
                           onClick={() => handleOpenModal(c)}
-                          disabled={c.points <= 0}
-                          style={{ opacity: c.points <= 0 ? 0.5 : 1, cursor: c.points <= 0 ? 'not-allowed' : 'pointer' }}
+                          style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid rgba(0,0,0,0.1)' }}
                         >
-                          <Minus size={14} style={{ display: 'inline', marginBottom: '-2px' }} /> Redeem
+                          <Clock size={14} style={{ display: 'inline', marginBottom: '-2px' }} /> History
                         </button>
                       </div>
                     </td>
@@ -169,52 +168,40 @@ const Loyalty = () => {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3 style={{ margin: 0 }}>Redeem Points</h3>
+              <h3 style={{ margin: 0 }}>Points History</h3>
               <button className={styles.iconBtn} onClick={handleCloseModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
                 <X size={24} color="var(--text-muted)" />
               </button>
             </div>
             
-            <form onSubmit={handleSavePoints}>
-              <div style={{ marginBottom: '24px', color: 'var(--text-muted)', fontSize: '14px' }}>
-                Customer: <strong style={{ color: 'var(--text-main)' }}>{modalState.customer.name}</strong><br/>
-                Available: <strong style={{ color: '#F59E0B' }}>{modalState.customer.points} pts</strong> (৳{modalState.customer.discountValue})
-              </div>
+            <div style={{ marginBottom: '16px', color: 'var(--text-muted)', fontSize: '14px', background: 'var(--bg-main)', padding: '12px', borderRadius: '8px' }}>
+              Customer: <strong style={{ color: 'var(--text-main)' }}>{modalState.customer.name}</strong> ({modalState.customer.phone})<br/>
+              Available Points: <strong style={{ color: '#D97706' }}>{modalState.customer.points}</strong>
+            </div>
 
-              <div className={styles.formGroup}>
-                <label>Points to Redeem (1 Point = 2৳)</label>
-                <input 
-                  required 
-                  type="number" 
-                  min="1" 
-                  max={modalState.customer.points}
-                  value={pointsInput} 
-                  onChange={e => setPointsInput(e.target.value)} 
-                  autoFocus
-                />
-                {pointsInput > 0 && pointsInput <= modalState.customer.points && (
-                  <span style={{ fontSize: '13px', color: '#10B981', marginTop: '4px', textAlign: 'center', fontWeight: 'bold' }}>
-                    Giving Discount: ৳{pointsInput * 2}
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.modalActions}>
-                <button type="button" className="btn" onClick={handleCloseModal} style={{ background: 'rgba(0,0,0,0.05)' }}>Cancel</button>
-                <button 
-                  type="submit" 
-                  className="btn" 
-                  style={{ 
-                    background: '#EF4444', 
-                    color: '#fff',
-                    border: 'none'
-                  }} 
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Confirm Redeem'}
-                </button>
-              </div>
-            </form>
+            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+              {historyLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>Loading history...</div>
+              ) : history.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No redeem history found for this customer.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {history.map((h, i) => (
+                    <div key={i} style={{ padding: '12px', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', background: '#fff' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 600, color: h.type === 'redeem' ? '#EF4444' : '#10B981' }}>
+                          {h.type === 'redeem' ? '-' : '+'}{h.points} Points
+                        </span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {new Date(h.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-main)' }}>{h.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

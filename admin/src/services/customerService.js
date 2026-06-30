@@ -12,6 +12,47 @@ import {
 import { db } from './firebase';
 
 const COLLECTION_NAME = 'customers';
+const LOYALTY_HISTORY_COLLECTION = 'loyalty_history';
+
+// Helper for Loyalty Tiers
+export const getCustomerTier = (points, profile = {}) => {
+  const plat = profile.loyaltyTierPlatinum || 200;
+  const gold = profile.loyaltyTierGold || 51;
+  
+  if (points >= plat) return { label: 'Platinum', color: '#8b5cf6', bg: '#ede9fe' };
+  if (points >= gold) return { label: 'Gold', color: '#eab308', bg: '#fef9c3' };
+  return { label: 'Silver', color: '#94a3b8', bg: '#f1f5f9' };
+};
+
+// Loyalty History
+export const addLoyaltyHistory = async (historyData) => {
+  try {
+    const docRef = await addDoc(collection(db, LOYALTY_HISTORY_COLLECTION), {
+      ...historyData,
+      createdAt: new Date().toISOString(),
+    });
+    return { id: docRef.id, ...historyData };
+  } catch (error) {
+    console.error("Error adding loyalty history", error);
+    throw error;
+  }
+};
+
+export const getLoyaltyHistoryByPhone = async (phone) => {
+  try {
+    const q = query(
+      collection(db, LOYALTY_HISTORY_COLLECTION),
+      where("phone", "==", phone)
+    );
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // sort by date descending
+    return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } catch (error) {
+    console.error("Error fetching loyalty history", error);
+    return [];
+  }
+};
 
 const calculateWarrantyExpiry = (deliveryDate, warrantyStr) => {
   if (!warrantyStr || warrantyStr === 'None') return null;

@@ -244,10 +244,11 @@ const Customers = () => {
     try {
       setIsSaving(true);
       const totalBill = parseFloat(formData.estCost || 0);
+      const discount = editingCustomer ? Number(editingCustomer.discountAmount || 0) : 0;
       const dataToSave = {
         ...formData,
         totalBill: totalBill,
-        dueBalance: totalBill - parseFloat(formData.advance || 0),
+        dueBalance: totalBill - parseFloat(formData.advance || 0) - discount,
         loyaltyPoints: Math.floor(totalBill / 100)
       };
 
@@ -306,8 +307,9 @@ const Customers = () => {
       setIsSaving(true);
       const paidNow = parseFloat(deliveryPaidNow || 0);
       const totalAdvance = parseFloat(deliveryCustomer.advance || 0) + paidNow;
+      const discount = Number(deliveryCustomer.discountAmount || 0);
       const totalBill = parseFloat(deliveryCustomer.totalBill || 0);
-      const newDue = totalBill - totalAdvance;
+      const newDue = totalBill - totalAdvance - discount;
       
       const updateData = {
         status: 'Delivery',

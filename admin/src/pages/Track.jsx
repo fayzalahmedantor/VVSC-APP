@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { getCustomers, updateCustomer, getCustomerTier, addLoyaltyHistory } from '../services/customerService';
+import { getSmsSettings, sendSMS } from '../services/messagingService';
 import {
-  Package, CheckCircle, Truck, ShieldAlert, Wrench, XCircle, Store
+  Package, CheckCircle, Truck, ShieldAlert, Wrench, XCircle, Store, Award, Star, Gift
 } from 'lucide-react';
 import styles from './Track.module.css';
 import StatusAnimation from '../components/common/StatusAnimation';
@@ -37,6 +39,72 @@ const Track = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [shopProfile, setShopProfile] = useState(null);
+  
+  const [customerPoints, setCustomerPoints] = useState(0);
+  const [customerTier, setCustomerTier] = useState(null);
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [redeemInput, setRedeemInput] = useState('');
+  
+  const [loyaltyConfig, setLoyaltyConfig] = useState({
+    spendAmt: 100, earnPts: 1, redeemPts: 1, discountAmt: 2
+  });
+  
+  const [minRedeem, setMinRedeem] = useState(50);
+  const [enableSelfRedeem, setEnableSelfRedeem] = useState(true);
+
+  const handleRedeemSubmit = async (e) => {
+    e.preventDefault();
+    const pointsToRedeem = Number(redeemInput);
+    if (pointsToRedeem < minRedeem || pointsToRedeem > customerPoints) return;
+    
+    setIsRedeeming(true);
+    try {
+      const discount = (pointsToRedeem / loyaltyConfig.redeemPts) * loyaltyConfig.discountAmt;
+      const newDiscountAmount = Number(customer.discountAmount || 0) + discount;
+      const newDue = Math.max(0, Number(customer.totalBill || 0) - Number(customer.advance || 0) - newDiscountAmount);
+      const newRedeemedPoints = Number(customer.redeemedPoints || 0) + pointsToRedeem;
+      
+      const updateData = {
+        discountAmount: newDiscountAmount,
+        dueBalance: newDue,
+        redeemedPoints: newRedeemedPoints
+      };
+      
+      await updateCustomer(customer.id, updateData);
+      
+      // Log History
+      await addLoyaltyHistory({
+        customerId: customer.id,
+        phone: customer.phone,
+        type: 'redeem',
+        points: pointsToRedeem,
+        discount: discount,
+        description: `Redeemed ${pointsToRedeem} points for ৳${discount} discount on Job #${customer.id.substring(0, 6)}.`
+      });
+      
+      const updatedCustomer = { ...customer, ...updateData };
+      setCustomer(updatedCustomer);
+      setCustomerPoints(prev => prev - pointsToRedeem);
+      setRedeemInput('');
+      
+      // Send SMS
+      if (updatedCustomer.phone) {
+        const smsSettings = await getSmsSettings();
+        const template = smsSettings?.msgRedeemed || "অভিনন্দন! আপনি {Points} পয়েন্ট ব্যবহার করে {DiscountAmount} টাকা ছাড় পেয়েছেন। আপনার বর্তমান বিল: {TotalBill} টাকা।";
+        let msg = template.replace(/{Points}/g, pointsToRedeem);
+        msg = msg.replace(/{DiscountAmount}/g, discount);
+        msg = msg.replace(/{TotalBill}/g, updatedCustomer.totalBill);
+        await sendSMS(updatedCustomer.phone, msg, smsSettings);
+      }
+      
+      alert(`Success! You have redeemed ${pointsToRedeem} points for a ৳${discount} discount.`);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to redeem points. Please try again later.');
+    } finally {
+      setIsRedeeming(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTrackingData = async () => {
@@ -44,15 +112,49 @@ const Track = () => {
         const docRef = doc(db, 'customers', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setCustomer({ id: docSnap.id, ...docSnap.data() });
+          const currentCustomer = { id: docSnap.id, ...docSnap.data() };
+          setCustomer(currentCustomer);
+          
+          // Shop Profile for rates
+          const shopRef = doc(db, 'settings', 'shopProfile');
+          const shopSnap = await getDoc(shopRef);
+          let pRate = 100, dRate = 2;
+          if (shopSnap.exists()) {
+            const sp = shopSnap.data();
+            setShopProfile(sp);
+            
+            setLoyaltyConfig({
+              spendAmt: sp.loyaltySpendAmount || 100,
+              earnPts: sp.loyaltyEarnPoints || 1,
+              redeemPts: sp.loyaltyRedeemPoints || 1,
+              discountAmt: sp.loyaltyDiscountAmount || 2
+            });
+            
+            setMinRedeem(sp.loyaltyMinRedeem || 50);
+            setEnableSelfRedeem(sp.loyaltyEnableSelfRedeem !== false);
+          }
+          
+          // Calculate loyalty points
+          if (currentCustomer.phone) {
+            const allCusts = await getCustomers();
+            let earned = 0;
+            let redeemed = 0;
+            
+            const sAmt = shopSnap.exists() ? (shopSnap.data().loyaltySpendAmount || 100) : 100;
+            const ePts = shopSnap.exists() ? (shopSnap.data().loyaltyEarnPoints || 1) : 1;
+            
+            allCusts.forEach(c => {
+              if (c.phone === currentCustomer.phone) {
+                earned += Math.floor((Number(c.totalBill || 0) / sAmt) * ePts);
+                redeemed += Number(c.redeemedPoints || 0);
+              }
+            });
+            const points = Math.max(0, earned - redeemed);
+            setCustomerPoints(points);
+            setCustomerTier(getCustomerTier(earned, shopSnap.exists() ? shopSnap.data() : {}));
+          }
         } else {
           setError('Invalid tracking ID. No repair job found.');
-        }
-
-        const shopRef = doc(db, 'settings', 'shopProfile');
-        const shopSnap = await getDoc(shopRef);
-        if (shopSnap.exists()) {
-          setShopProfile(shopSnap.data());
         }
       } catch (err) {
         console.error(err);
@@ -158,7 +260,23 @@ const Track = () => {
         {/* ─── Job Info ─── */}
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Job Details</div>
-          <InfoRow label="Customer" value={customer.name} />
+          
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Customer</span>
+            <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {customer.name}
+              {customerTier && (
+                <div style={{ 
+                  display: 'inline-flex', alignItems: 'center', gap: '4px', 
+                  padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600,
+                  background: customerTier.bg, color: customerTier.color
+                }}>
+                  <Award size={12} /> {customerTier.label}
+                </div>
+              )}
+            </span>
+          </div>
+
           <InfoRow label="Device" value={`${customer.brand || ''} ${customer.deviceType || ''}`.trim()} />
           <InfoRow label="Problem" value={customer.issue} />
           {customer.deliveryDate && customer.status === 'Delivery' && (
@@ -174,6 +292,48 @@ const Track = () => {
           {Number(customer.dueBalance) > 0 && (
             <InfoRow label="Due Balance" value={`৳${customer.dueBalance}`} isDue />
           )}
+          
+          {/* LOYALTY SECTION */}
+          <div style={{ marginTop: '20px', padding: '16px', background: '#FEF3C7', borderRadius: '12px', border: '1px solid #FDE68A' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold' }}>
+                <Star size={18} fill="currentColor" />
+                Your Loyalty Points
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: '#B45309' }}>{customerPoints} pts</div>
+            </div>
+            
+            <div style={{ fontSize: '13px', color: '#B45309', marginBottom: '16px' }}>
+              Value: <strong>৳{(customerPoints / loyaltyConfig.redeemPts) * loyaltyConfig.discountAmt}</strong> discount. 
+              (Min {minRedeem} points required to redeem).
+            </div>
+
+            {!enableSelfRedeem ? (
+              <div style={{ fontSize: '12px', color: '#92400E', fontStyle: 'italic', background: '#FDE68A', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                Online point redemption is currently disabled.
+              </div>
+            ) : customer.status === 'Complete' ? (
+              <form onSubmit={handleRedeemSubmit} style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="number" 
+                  min={minRedeem} 
+                  max={customerPoints}
+                  value={redeemInput}
+                  onChange={e => setRedeemInput(e.target.value)}
+                  placeholder="Points"
+                  required
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #FCD34D', outline: 'none' }}
+                />
+                <button type="submit" disabled={isRedeeming || customerPoints < minRedeem} style={{ padding: '10px 16px', background: '#D97706', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: customerPoints >= minRedeem ? 'pointer' : 'not-allowed', opacity: customerPoints >= minRedeem ? 1 : 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Gift size={16} /> {isRedeeming ? '...' : 'Redeem'}
+                </button>
+              </form>
+            ) : (
+              <div style={{ fontSize: '12px', color: '#92400E', fontStyle: 'italic', background: '#FDE68A', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                You can redeem points once your device is Ready.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ─── Footer ─── */}

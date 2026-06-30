@@ -12,7 +12,7 @@ const SmsSettings = () => {
   const [smsSettings, setSmsSettings] = useState({
     apiUrl: '', apiKey: '', senderId: '',
     msgReceived: '', msgReady: '', msgDelivered: '', msgCancelled: '', msgWhatsApp: '',
-    msgDueReminder: '', msgFollowUp: ''
+    msgDueReminder: '', msgFollowUp: '', msgRedeemed: ''
   });
 
   const [customers, setCustomers] = useState([]);
@@ -90,7 +90,8 @@ const SmsSettings = () => {
         msgCancelled: defaultSmsSettings.msgCancelled,
         msgWhatsApp: defaultSmsSettings.msgWhatsApp,
         msgDueReminder: defaultSmsSettings.msgDueReminder,
-        msgFollowUp: defaultSmsSettings.msgFollowUp
+        msgFollowUp: defaultSmsSettings.msgFollowUp,
+        msgRedeemed: defaultSmsSettings.msgRedeemed
       });
     }
   };
@@ -267,6 +268,12 @@ const SmsSettings = () => {
             <div className={styles.formGroup}>
               <label>Follow-up Template (6-Month Reminder)</label>
               <textarea name="msgFollowUp" value={smsSettings.msgFollowUp || ''} onChange={handleSmsChange} rows="3" />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Points Redeemed Template</label>
+              <textarea name="msgRedeemed" value={smsSettings.msgRedeemed || ''} onChange={handleSmsChange} rows="3" />
+              <small style={{ color: 'var(--text-muted)' }}>Variables: {"{Points}"}, {"{DiscountAmount}"}, {"{TotalBill}"}</small>
             </div>
 
             <div className={styles.actions} style={{ display: 'flex', gap: '12px' }}>
