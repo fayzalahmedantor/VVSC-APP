@@ -4,6 +4,7 @@ import { db } from './firebase';
 const SMS_SETTINGS_DOC = 'smsSettings';
 
 export const defaultSmsSettings = {
+  isSmsEnabled: true,
   apiUrl: '',
   apiKey: '',
   senderId: '',
@@ -58,6 +59,12 @@ export const replaceVariables = (template, customer, shopName = 'Repair Shop') =
 };
 
 export const sendSMS = async (phone, message, settings) => {
+  // If SMS service is disabled globally, abort immediately.
+  if (settings.isSmsEnabled === false) {
+    console.log("SMS service is disabled in settings.");
+    return false;
+  }
+
   if (!settings.apiUrl || !phone) {
     console.log("SMS API URL or phone is missing.");
     return false;

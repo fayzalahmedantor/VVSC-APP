@@ -65,6 +65,20 @@ const SmsSettings = () => {
     }
   };
 
+  const handleToggleSms = async (e) => {
+    const isEnabled = e.target.checked;
+    setSmsSettings(prev => ({ ...prev, isSmsEnabled: isEnabled }));
+    
+    try {
+      await updateSmsSettings({ ...smsSettings, isSmsEnabled: isEnabled });
+    } catch (error) {
+      console.error("Failed to toggle SMS:", error);
+      alert("Failed to save SMS toggle state.");
+      // Revert state if failed
+      setSmsSettings(prev => ({ ...prev, isSmsEnabled: !isEnabled }));
+    }
+  };
+
   const handleResetDefaults = () => {
     if(window.confirm('Are you sure you want to load the default Bengali messages? This will overwrite your current templates.')) {
       setSmsSettings({
@@ -156,8 +170,35 @@ const SmsSettings = () => {
         
         {activeTab === 'gateway' && (
           <form onSubmit={handleSmsSubmit} className={styles.tabPane}>
-            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Gateway Configuration</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Configure your generic SMS gateway to send automated alerts.</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ margin: 0 }}>Gateway Configuration</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '4px 0 0 0' }}>Configure your generic SMS gateway to send automated alerts.</p>
+              </div>
+              
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                <span style={{ fontWeight: '600', color: smsSettings.isSmsEnabled ? 'var(--success)' : 'var(--text-muted)' }}>
+                  {smsSettings.isSmsEnabled ? 'SMS is ON' : 'SMS is OFF'}
+                </span>
+                <div style={{
+                  position: 'relative', width: '44px', height: '24px', 
+                  background: smsSettings.isSmsEnabled ? 'var(--success)' : '#e2e8f0',
+                  borderRadius: '12px', transition: 'background 0.3s'
+                }}>
+                  <div style={{
+                    position: 'absolute', top: '2px', left: smsSettings.isSmsEnabled ? '22px' : '2px',
+                    width: '20px', height: '20px', background: 'white', borderRadius: '50%',
+                    transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }} />
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={smsSettings.isSmsEnabled !== false} // default to true if undefined
+                  onChange={handleToggleSms} 
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
             
             <div className={styles.formGroup}>
               <label>API URL</label>
