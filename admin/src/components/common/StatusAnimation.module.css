@@ -1,12 +1,9 @@
-/* ══════════════════════════════════════════
-   Wrapper & Scene base
-══════════════════════════════════════════ */
 .wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: 10px 0 4px;
 }
 
@@ -15,678 +12,132 @@
   max-width: 300px;
   height: 130px;
   position: relative;
-  perspective: 600px;
-  overflow: visible;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .caption {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: #475569;
   text-align: center;
   letter-spacing: 0.2px;
   padding: 0 16px;
 }
 
-/* ══════════════════════════════════════════
-   Shared Element Styles
-══════════════════════════════════════════ */
-
-/* Person head */
-.head {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #fbbf24, #f59e0b);
-  box-shadow: 0 4px 12px rgba(251,191,36,0.4);
-  position: relative;
-  z-index: 2;
-  flex-shrink: 0;
-}
-/* Eyes as pseudo-elements */
-.head::before,
-.head::after {
-  content: '';
-  position: absolute;
-  width: 3.5px;
-  height: 3.5px;
-  border-radius: 50%;
-  background: #92400e;
-  top: 7px;
-}
-.head::before { left: 5px; }
-.head::after  { right: 5px; }
-
-/* Person body */
-.body {
-  width: 28px;
-  height: 32px;
-  border-radius: 8px 8px 5px 5px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  flex-shrink: 0;
-}
-
-/* Legs container */
-.legs {
-  display: flex;
-  gap: 4px;
-  margin-top: 0;
-}
-.leg {
-  width: 9px;
-  height: 22px;
-  background: linear-gradient(to bottom, #1e293b, #374151);
-  border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-.legA {
-  transform-box: fill-box;
-  transform-origin: top center;
-  animation: swingA 0.65s ease-in-out infinite;
-}
-.legB {
-  transform-box: fill-box;
-  transform-origin: top center;
-  animation: swingA 0.65s ease-in-out infinite reverse;
-}
-@keyframes swingA {
-  0%,100% { transform: rotate(-20deg); }
-  50%      { transform: rotate(20deg); }
-}
-
-/* Phone shape */
-.phone {
-  width: 30px;
-  height: 50px;
-  background: linear-gradient(145deg, #2d3748, #0f172a);
-  border-radius: 8px;
-  box-shadow:
-    0 12px 28px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    inset 0 -1px 0 rgba(0,0,0,0.4);
-  position: relative;
-  overflow: hidden;
-}
-.phone::before {
-  /* Camera notch */
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8px; height: 3px;
-  border-radius: 2px;
-  background: #0f172a;
-  z-index: 2;
-}
-.phoneScreen {
-  position: absolute;
-  inset: 7px 3px 5px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, #6366f1, #0ea5e9);
-  overflow: hidden;
-}
-
-/* ══════════════════════════════════════════
-   RECEIVED — Walking animation
-══════════════════════════════════════════ */
-.sceneReceived {
-  background: linear-gradient(to bottom, #fffbeb 60%, #fef3c7);
-  border-radius: 16px;
-}
-
-/* Shop counter */
-.shopCounter {
-  position: absolute;
-  right: 18px;
-  bottom: 20px;
-}
-.counterTop {
-  width: 70px; height: 12px;
-  background: linear-gradient(145deg, #c4b5fd, #a78bfa);
-  border-radius: 4px 4px 0 0;
-  box-shadow: 0 -2px 8px rgba(139,92,246,0.3);
-}
-.counterBody {
-  width: 70px; height: 30px;
-  background: linear-gradient(145deg, #7c3aed, #6d28d9);
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 8px 20px rgba(109,40,217,0.4);
-}
-.shopTag {
-  position: absolute;
-  top: -34px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  border-radius: 8px;
-  padding: 4px 8px;
-  font-size: 9px;
-  font-weight: 800;
-  color: #7c3aed;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  white-space: nowrap;
-  line-height: 1.4;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-.shopTag span:first-child { font-size: 14px; }
-
-/* Walking person group */
-.walkerWrap {
-  position: absolute;
-  left: 22px;
-  bottom: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  animation: walkForward 2.5s ease-in-out infinite;
-}
-@keyframes walkForward {
-  0%,100% { transform: translateX(0); }
-  50%      { transform: translateX(12px); }
-}
-
-.handDevice {
-  position: absolute;
-  right: -28px;
-  top: 18px;
-  animation: walkForward 2.5s ease-in-out infinite;
-}
-
-/* Moving dots */
-.dots {
-  position: absolute;
-  top: 50%;
-  left: 80px;
-  right: 100px;
-  display: flex;
-  justify-content: space-evenly;
-  transform: translateY(-50%);
-}
-.dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #f59e0b;
-  animation: dotPulse 0.8s ease-in-out infinite;
-}
-@keyframes dotPulse {
-  0%,100% { opacity: 0.2; transform: scale(0.6); }
-  50%      { opacity: 1;   transform: scale(1); }
-}
-
-/* ══════════════════════════════════════════
-   WORKING — Technician repairing
-══════════════════════════════════════════ */
-.sceneWorking {
-  background: linear-gradient(to bottom, #eef2ff 60%, #e0e7ff);
-  border-radius: 16px;
-}
-
-/* Workbench */
-.bench {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-}
-.benchTop {
-  width: 90px; height: 10px;
-  background: linear-gradient(145deg, #c4b5fd, #a78bfa);
-  border-radius: 4px 4px 0 0;
-  box-shadow: 0 -2px 8px rgba(139,92,246,0.25);
-}
-.benchBody {
-  width: 90px; height: 20px;
-  background: linear-gradient(145deg, #7c3aed, #5b21b6);
-  border-radius: 0 0 6px 6px;
-  box-shadow: 0 6px 18px rgba(91,33,182,0.35);
-}
-
-/* Device on bench */
-.benchPhone {
-  position: absolute;
-  left: 50%;
-  bottom: 48px;
-  transform: translateX(-50%);
-  animation: benchPhoneVibrate 0.2s ease-in-out infinite;
-}
-@keyframes benchPhoneVibrate {
-  0%,100% { transform: translateX(-50%) rotate(0deg); }
-  25%      { transform: translateX(calc(-50% + 1px)) rotate(0.5deg); }
-  75%      { transform: translateX(calc(-50% - 1px)) rotate(-0.5deg); }
-}
-
-/* Loading bars inside screen */
-.loadingBar {
-  height: 3px;
-  background: rgba(255,255,255,0.6);
-  border-radius: 2px;
-  margin: 4px 3px 0;
-  width: 80%;
-  animation: loadGrow 1s ease-in-out infinite;
-}
-@keyframes loadGrow {
-  0%    { width: 20%; opacity: 0.4; }
-  50%   { width: 90%; opacity: 1; }
-  100%  { width: 20%; opacity: 0.4; }
-}
-
-/* Orbiting tools */
-.orbitRing {
-  position: absolute;
-  left: 50%;
-  bottom: 50px;
-  width: 0; height: 0;
-  transform: translateX(-50%);
-  animation: ringRotate 2.4s linear infinite;
-}
-@keyframes ringRotate {
-  from { transform: translateX(-50%) rotate(0deg); }
-  to   { transform: translateX(-50%) rotate(360deg); }
-}
-.tool {
-  position: absolute;
-  font-size: 18px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-}
-.tool1 { transform: translate(-46px, -38px); }
-.tool2 { transform: translate(12px, -52px); }
-.tool3 { transform: translate(-16px, 6px); }
-
-/* Sparks */
-.sparks {
-  position: absolute;
-  left: 50%;
-  bottom: 56px;
-  transform: translateX(-50%);
-}
-.spark {
-  position: absolute;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #f59e0b;
-  box-shadow: 0 0 6px #f59e0b;
-  animation: sparkFly 0.8s ease-out infinite;
-  animation-delay: var(--delay);
-  transform-origin: center;
-}
-@keyframes sparkFly {
-  0%   { transform: rotate(var(--angle)) translateX(0)  scale(1);   opacity: 1; }
-  100% { transform: rotate(var(--angle)) translateX(24px) scale(0); opacity: 0; }
-}
-
-/* Technician */
-.techWrap {
-  position: absolute;
-  right: 20px;
-  bottom: 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-/* ══════════════════════════════════════════
-   READY — Device fixed, glowing
-══════════════════════════════════════════ */
-.sceneReady {
-  background: linear-gradient(to bottom, #ecfdf5 60%, #d1fae5);
-  border-radius: 16px;
-}
-
-/* Glow rings */
-.glow1, .glow2 {
+/* Glow Rings */
+.glowRing1, .glowRing2 {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid #10b981;
-  top: 50%; left: 50%;
+  border: 2px solid;
+  top: 50%; 
+  left: 50%;
   transform: translate(-50%, -50%);
-}
-.glow1 {
-  width: 90px; height: 90px;
-  animation: glowPulse 1.5s ease-in-out infinite;
-}
-.glow2 {
-  width: 60px; height: 60px;
-  animation: glowPulse 1.5s ease-in-out infinite 0.3s;
-}
-@keyframes glowPulse {
-  0%,100% { opacity: 0.15; transform: translate(-50%, -50%) scale(0.9); }
-  50%      { opacity: 0.5;  transform: translate(-50%, -50%) scale(1.1); }
+  opacity: 0;
 }
 
-/* Floating device */
-.floatDevice {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  animation: floatUpDown 1.8s ease-in-out infinite;
+.glowRing1 {
+  width: 100px; height: 100px;
+  animation: ripple 2s infinite cubic-bezier(0.65, 0, 0.34, 1);
 }
-@keyframes floatUpDown {
-  0%,100% { transform: translateX(-50%) translateY(0); }
-  50%      { transform: translateX(-50%) translateY(-8px); }
+
+.glowRing2 {
+  width: 140px; height: 140px;
+  animation: ripple 2s infinite cubic-bezier(0.65, 0, 0.34, 1) 0.5s;
 }
-.checkmark {
-  font-size: 18px;
-  font-weight: 900;
-  color: #fff;
+
+@keyframes ripple {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.8; border-width: 4px; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; border-width: 0px; }
+}
+
+/* Main Icon Wrapping */
+.iconWrap {
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.phoneShadow {
-  width: 28px; height: 8px;
-  background: rgba(0,0,0,0.15);
+
+.iconBg {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  filter: blur(4px);
-  animation: shadowScale 1.8s ease-in-out infinite;
-}
-@keyframes shadowScale {
-  0%,100% { transform: scaleX(1);   opacity: 0.5; }
-  50%      { transform: scaleX(0.6); opacity: 0.2; }
-}
-
-/* Orbiting stars */
-.orbitStar {
-  position: absolute;
-  top: 50%; left: 50%;
-  font-size: 12px;
-  color: #f59e0b;
-  animation: orbitAround 3s linear infinite;
-  animation-delay: calc(var(--i) * -0.75s);
-}
-@keyframes orbitAround {
-  from { transform: rotate(0deg) translateX(52px) rotate(0deg); }
-  to   { transform: rotate(360deg) translateX(52px) rotate(-360deg); }
-}
-
-/* Waiting tech */
-.techWaitWrap {
-  position: absolute;
-  right: 18px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.armsUp {
-  position: absolute;
-  top: 26px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 48px;
-}
-.armL, .armR {
-  position: absolute;
-  width: 5px; height: 22px;
-  background: linear-gradient(to bottom, #fbbf24, #f59e0b);
-  border-radius: 3px;
-  top: 0;
-}
-.armL {
-  left: 0;
-  transform-origin: bottom center;
-  animation: armWaveL 1.8s ease-in-out infinite;
-  transform: rotate(-40deg);
-}
-.armR {
-  right: 0;
-  transform-origin: bottom center;
-  animation: armWaveL 1.8s ease-in-out infinite 0.3s;
-  transform: rotate(40deg);
-}
-@keyframes armWaveL {
-  0%,100% { transform: rotate(-40deg); }
-  50%      { transform: rotate(-55deg); }
-}
-
-/* ══════════════════════════════════════════
-   DELIVERY — Device flying to customer
-══════════════════════════════════════════ */
-.sceneDelivery {
-  background: linear-gradient(to bottom, #eff6ff 60%, #dbeafe);
-  border-radius: 16px;
-}
-
-/* Technician left */
-.techLeft {
-  position: absolute;
-  left: 16px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.extendArm {
-  position: absolute;
-  top: 28px;
-  right: -26px;
-  width: 28px; height: 5px;
-  background: linear-gradient(to right, #fbbf24, #f59e0b);
-  border-radius: 3px;
-  transform: rotate(-10deg);
-}
-
-/* Flying package */
-.flyingPkg {
-  position: absolute;
-  top: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: pkgFly 1.4s ease-in-out infinite;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-@keyframes pkgFly {
-  0%,100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
-  30%      { transform: translateX(-50%) translateY(-12px) rotate(-4deg); }
-  70%      { transform: translateX(-50%) translateY(-8px) rotate(3deg); }
-}
-.pkgBox {
-  width: 44px; height: 44px;
-  background: linear-gradient(145deg, #3b82f6, #2563eb);
-  border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(37,99,235,0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-.pkgRibbon {
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 4px; height: 100%;
-  background: rgba(255,255,255,0.3);
-}
-.pkgTrail {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-}
-.pkgTrail span {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #93c5fd;
-  animation: trailFade 0.5s ease-in-out infinite;
-}
-.pkgTrail span:nth-child(2) { animation-delay: 0.15s; }
-.pkgTrail span:nth-child(3) { animation-delay: 0.3s; }
-@keyframes trailFade {
-  0%,100% { opacity: 0.2; }
-  50%      { opacity: 1; }
 }
 
-/* Customer right */
-.customerRight {
+/* Sparkles for Active states */
+.sparkle {
   position: absolute;
-  right: 16px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  z-index: 5;
+  animation: floatSparkle 2.5s infinite ease-in-out;
 }
-.celebArms {
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-}
-.celebArmL, .celebArmR {
-  position: absolute;
-  width: 5px; height: 20px;
-  background: linear-gradient(to bottom, #fbbf24, #f59e0b);
-  border-radius: 3px;
-}
-.celebArmL {
-  left: 0;
-  transform: rotate(-50deg);
-  transform-origin: bottom center;
-  animation: celebL 1s ease-in-out infinite;
-}
-.celebArmR {
-  right: 0;
-  transform: rotate(50deg);
-  transform-origin: bottom center;
-  animation: celebL 1s ease-in-out infinite 0.15s;
-}
-@keyframes celebL {
-  0%,100% { transform: rotate(-50deg); }
-  50%      { transform: rotate(-65deg); }
+.sparkle1 { top: 20px; right: 60px; animation-delay: 0.2s; }
+.sparkle2 { bottom: 30px; left: 50px; animation-delay: 0.7s; }
+.sparkle3 { top: 40px; left: 80px; animation-delay: 1.2s; }
+
+@keyframes floatSparkle {
+  0%, 100% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0.5; }
+  50% { transform: translateY(-12px) scale(1.2) rotate(15deg); opacity: 1; }
 }
 
-/* Celebration burst */
-.burstWrap {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+/* ────────────────────────────────────────────
+   Specific Animations
+──────────────────────────────────────────── */
+
+/* Received - Gentle pulse */
+.pulse {
+  animation: gentlePulse 2s infinite ease-in-out;
 }
-.burstItem {
-  position: absolute;
-  font-size: 14px;
-  animation: burstPop 1.2s ease-in-out infinite;
-  animation-delay: calc(var(--bi) * 0.3s);
-}
-.burstItem:nth-child(1) { top: 0;   left: 0; }
-.burstItem:nth-child(2) { top: -12px; left: 14px; }
-.burstItem:nth-child(3) { top: 10px; left: 20px; }
-.burstItem:nth-child(4) { top: -8px; left: -10px; }
-@keyframes burstPop {
-  0%,100% { transform: scale(0.5) translateY(4px); opacity: 0.3; }
-  50%      { transform: scale(1.1) translateY(0);   opacity: 1; }
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
-/* ══════════════════════════════════════════
-   CANCELLED — Broken device
-══════════════════════════════════════════ */
-.sceneCancelled {
-  background: linear-gradient(to bottom, #fef2f2 60%, #fee2e2);
-  border-radius: 16px;
+/* Working - Spin/Wobble */
+.spinPulse {
+  animation: spinWobble 2s infinite linear;
+}
+@keyframes spinWobble {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(10deg) scale(1.05); }
+  50% { transform: rotate(0deg) scale(1); }
+  75% { transform: rotate(-10deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1); }
 }
 
-/* Cracked phone */
-.crackedPhone {
-  position: absolute;
-  left: 50%;
-  top: 18px;
-  transform: translateX(-50%);
-  animation: shake 0.35s ease-in-out infinite;
+/* Complete - Happy Bounce */
+.bounceDrop {
+  animation: happyBounce 1.5s infinite ease-in-out;
 }
-@keyframes shake {
-  0%,100% { transform: translateX(-50%) rotate(0deg); }
-  20%      { transform: translateX(calc(-50% + 3px)) rotate(-4deg); }
-  40%      { transform: translateX(calc(-50% - 3px)) rotate(4deg); }
-  60%      { transform: translateX(calc(-50% + 2px)) rotate(-2deg); }
-  80%      { transform: translateX(calc(-50% - 2px)) rotate(2deg); }
-}
-.xMark {
-  font-size: 20px;
-  font-weight: 900;
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-shadow: 0 0 10px rgba(239,68,68,0.5);
-  animation: xPulse 0.8s ease-in-out infinite;
-}
-@keyframes xPulse {
-  0%,100% { opacity: 0.7; }
-  50%      { opacity: 1; }
-}
-.crackLine {
-  position: absolute;
-  top: 0; left: 50%;
-  width: 2px; height: 100%;
-  background: linear-gradient(to bottom, transparent, #ef4444, transparent);
-  transform: translateX(-50%) rotate(8deg);
-  opacity: 0.7;
+@keyframes happyBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.05); }
 }
 
-/* Warning rings */
-.warnRing1, .warnRing2 {
-  position: absolute;
-  border-radius: 50%;
-  left: 50%; top: 40px;
-  transform: translateX(-50%);
-  border: 2px solid #ef4444;
-  animation: warnExpand 1.2s ease-out infinite;
+/* Delivery - Truck Driving */
+.driveForward {
+  animation: driveTruck 2.5s infinite ease-in-out;
 }
-.warnRing1 { width: 60px; height: 60px; }
-.warnRing2 { width: 80px; height: 80px; animation-delay: 0.3s; }
-@keyframes warnExpand {
-  0%   { transform: translateX(-50%) scale(0.7); opacity: 0.6; }
-  100% { transform: translateX(-50%) scale(1.3); opacity: 0; }
+@keyframes driveTruck {
+  0% { transform: translateX(-20px); opacity: 0.6; }
+  50% { transform: translateX(20px); opacity: 1; }
+  100% { transform: translateX(-20px); opacity: 0.6; }
 }
 
-/* Sad tech */
-.sadTech {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+/* Cancel - Shake error */
+.shakeIcon {
+  animation: angryShake 0.5s infinite ease-in-out;
 }
-.sadArms {
-  position: absolute;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px; height: 5px;
-  background: linear-gradient(to right, #fbbf24 0%, transparent 40%, transparent 60%, #fbbf24 100%);
-  border-radius: 3px;
-}
-.tear {
-  position: absolute;
-  top: 14px;
-  left: 5px;
-  width: 4px; height: 6px;
-  background: #93c5fd;
-  border-radius: 0 0 50% 50%;
-  animation: tearDrop 1.4s ease-in infinite;
-}
-@keyframes tearDrop {
-  0%   { transform: translateY(0); opacity: 1; }
-  80%  { transform: translateY(10px); opacity: 0.4; }
-  100% { transform: translateY(14px); opacity: 0; }
+@keyframes angryShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-4deg); }
+  40% { transform: translateX(4px) rotate(4deg); }
+  60% { transform: translateX(-4px) rotate(-4deg); }
+  80% { transform: translateX(4px) rotate(4deg); }
 }
