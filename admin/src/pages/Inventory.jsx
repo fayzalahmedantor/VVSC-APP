@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Plus, Search, Edit2, Trash2, X, Settings as SettingsIcon, PackagePlus, History } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Settings as SettingsIcon, PackagePlus, History, ShoppingCart } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, addInventoryHistory, getInventoryHistory } from '../services/inventoryService';
 import { getDropdownSettings, updateDropdownSetting } from '../services/settingsService';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -34,6 +34,7 @@ const Inventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -47,6 +48,10 @@ const Inventory = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [restockProduct, setRestockProduct] = useState(null);
   const [restockQty, setRestockQty] = useState('');
+  
+  const [sellProduct, setSellProduct] = useState(null);
+  const [sellQty, setSellQty] = useState('');
+  
   const [isSaving, setIsSaving] = useState(false);
   
   const [historyLogs, setHistoryLogs] = useState([]);
@@ -251,6 +256,52 @@ const Inventory = () => {
     }
   };
 
+  // Sell logic
+  const handleOpenSell = (product) => {
+    if (product.stock <= 0) {
+      alert("Out of stock! Cannot sell.");
+      return;
+    }
+    setSellProduct(product);
+    setSellQty('');
+    setIsSellModalOpen(true);
+  };
+
+  const handleSellSubmit = async (e) => {
+    e.preventDefault();
+    if (!sellProduct || !sellQty || Number(sellQty) <= 0) return;
+    
+    if (Number(sellQty) > Number(sellProduct.stock)) {
+      alert(`Cannot sell more than available stock (${sellProduct.stock})`);
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      const newStock = Number(sellProduct.stock) - Number(sellQty);
+      const totalPrice = Number(sellQty) * Number(sellProduct.sellPrice);
+      
+      await updateProduct(sellProduct.id, { stock: newStock });
+      await addInventoryHistory({
+        productId: sellProduct.id,
+        productName: sellProduct.name,
+        type: 'sale',
+        quantityChange: -Number(sellQty),
+        newStock: newStock,
+        totalPrice: totalPrice,
+        description: `Sold ${sellQty} ${sellProduct.unit || 'Pcs'} at ৳${sellProduct.sellPrice} each`
+      });
+      
+      await fetchData();
+      setIsSellModalOpen(false);
+      setSellProduct(null);
+    } catch (error) {
+      alert("Failed to process sale.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Settings Logic
   const openSettings = (type) => {
     if (type === 'productNames' && !formData.category) {
@@ -345,7 +396,8 @@ const Inventory = () => {
   const allCategories = Array.from(new Set(products.map(p => p.category).filter(c => c)));
 
   const totalProductsCount = products.length;
-  const totalValue = products.reduce((sum, p) => sum + (Number(p.purchasePrice || 0) * Number(p.stock || 0)), 0);
+  const totalPurchaseValue = products.reduce((sum, p) => sum + (Number(p.purchasePrice || 0) * Number(p.stock || 0)), 0);
+  const totalSellValue = products.reduce((sum, p) => sum + (Number(p.sellPrice || 0) * Number(p.stock || 0)), 0);
   const lowStockCount = products.filter(p => Number(p.stock) <= Number(p.minStock || 5)).length;
 
   return (
@@ -357,8 +409,18 @@ const Inventory = () => {
           <span style={{ fontSize: '32px', fontWeight: 800 }}>{totalProductsCount}</span>
         </div>
         <div className={styles.card} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Value</span>
-          <span style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-main)' }}>৳{totalValue.toLocaleString()}</span>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {userRole === 'admin' ? 'Total Value (Cost / Sell)' : 'Total Stock Value'}
+          </span>
+          {userRole === 'admin' ? (
+            <span style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)' }}>
+              ৳{totalPurchaseValue.toLocaleString()} <span style={{ fontSize: '20px', color: 'var(--text-muted)', fontWeight: 400, margin: '0 4px' }}>/</span> <span style={{ color: 'var(--success)' }}>৳{totalSellValue.toLocaleString()}</span>
+            </span>
+          ) : (
+            <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--success)' }}>
+              ৳{totalSellValue.toLocaleString()}
+            </span>
+          )}
         </div>
         <div className={styles.card} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px', borderLeft: lowStockCount > 0 ? '4px solid var(--danger)' : 'none' }}>
           <span style={{ fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Low Stock Items</span>
@@ -432,7 +494,13 @@ const Inventory = () => {
                   filteredProducts.map(product => (
                     <tr key={product.id}>
                       <td>
-                        <div style={{ fontWeight: 600 }}>{product.name}</div>
+                        <div 
+                          className={styles.clickableProductName}
+                          onClick={() => handleOpenHistory(product)}
+                          title="View Inventory History"
+                        >
+                          {product.name}
+                        </div>
                         {product.minStock > 0 && <div style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Min Alert: {product.minStock} {product.unit}</div>}
                       </td>
                       <td>{product.category || '-'}</td>
@@ -445,11 +513,11 @@ const Inventory = () => {
                       </td>
                       <td>
                         <div className={styles.actionBtns}>
+                          <button className={`${styles.iconBtn} ${styles.sell}`} onClick={() => handleOpenSell(product)} title="Sell Product">
+                            <ShoppingCart size={18} />
+                          </button>
                           <button className={`${styles.iconBtn} ${styles.restock}`} onClick={() => handleOpenRestock(product)} title="Restock">
                             <PackagePlus size={18} />
-                          </button>
-                          <button className={styles.iconBtn} onClick={() => handleOpenHistory(product)} title="View History">
-                            <History size={18} />
                           </button>
                           <button className={styles.iconBtn} onClick={() => handleOpenModal(product)} title="Edit">
                             <Edit2 size={18} />
@@ -604,6 +672,57 @@ const Inventory = () => {
         </div>
       )}
 
+      {/* Sell Modal */}
+      {isSellModalOpen && sellProduct && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ maxWidth: '400px' }}>
+            <div className={styles.modalHeader}>
+              <h2>Sell: {sellProduct.name}</h2>
+              <button className={styles.iconBtn} onClick={() => setIsSellModalOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className={styles.productSummary} style={{ marginBottom: '24px', padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', borderLeft: '4px solid var(--accent-teal)' }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>{sellProduct.name}</h3>
+              <div style={{ display: 'flex', gap: '20px', fontSize: '14px', color: 'var(--text-muted)' }}>
+                <span>Available Stock: <strong style={{ color: 'var(--text-main)' }}>{sellProduct.stock} {sellProduct.unit}</strong></span>
+                <span>Unit Price: <strong style={{ color: 'var(--success)' }}>৳{sellProduct.sellPrice}</strong></span>
+              </div>
+            </div>
+            <form onSubmit={handleSellSubmit}>
+              <div className={styles.formGroup}>
+                <label>Quantity to Sell ({sellProduct.unit || 'Pcs'}) *</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max={sellProduct.stock}
+                  required 
+                  value={sellQty} 
+                  onChange={(e) => setSellQty(e.target.value)} 
+                  onWheel={e => e.target.blur()}
+                  placeholder={`E.g., 1`} 
+                  autoFocus
+                />
+              </div>
+              
+              {sellQty && Number(sellQty) > 0 && Number(sellQty) <= sellProduct.stock && (
+                <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(0, 212, 170, 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Total Price:</span>
+                  <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--accent-teal)' }}>৳{(Number(sellQty) * Number(sellProduct.sellPrice)).toLocaleString()}</span>
+                </div>
+              )}
+              
+              <div className={styles.modalActions} style={{ marginTop: '24px' }}>
+                <button type="button" className="btn" onClick={() => setIsSellModalOpen(false)} style={{ background: 'rgba(0,0,0,0.05)' }}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ background: 'var(--accent-teal)', border: 'none' }} disabled={isSaving}>
+                  {isSaving ? 'Processing...' : 'Confirm Sale'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* History Modal */}
       {isHistoryModalOpen && selectedHistoryProduct && (
         <div className={styles.modalOverlay}>
@@ -618,7 +737,7 @@ const Inventory = () => {
             {historyLogs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No history found for this product.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
                 {historyLogs.map(log => (
                   <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', borderLeft: log.quantityChange > 0 ? '4px solid var(--success)' : (log.quantityChange < 0 ? '4px solid var(--danger)' : '4px solid var(--text-muted)') }}>
                     <div>
@@ -639,7 +758,7 @@ const Inventory = () => {
                 ))}
               </div>
             )}
-            <div className={styles.modalActions}>
+            <div className={styles.modalActions} style={{ marginTop: '24px' }}>
               <button type="button" className="btn" onClick={() => setIsHistoryModalOpen(false)} style={{ background: 'rgba(0,0,0,0.05)' }}>Close</button>
             </div>
           </div>

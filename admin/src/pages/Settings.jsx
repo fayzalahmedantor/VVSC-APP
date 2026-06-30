@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { getShopProfile, updateShopProfile } from '../services/settingsService';
+import { getShopProfile, updateShopProfile, getLoyaltySettings, updateLoyaltySettings } from '../services/settingsService';
 import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
 import { seedDatabase } from '../utils/seeder';
-import { UserPlus, Trash2, Save, Store, Palette, FileText, Users } from 'lucide-react';
+import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Gift } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
@@ -24,6 +24,13 @@ const Settings = () => {
     logo: ''
   });
 
+  const [loyalty, setLoyalty] = useState({
+    spendPerPoint: 100,
+    discountPerPoint: 2,
+    minRedeemPoints: 150,
+    enableSelfRedeem: true
+  });
+
   const [employees, setEmployees] = useState([]);
   const [newEmployee, setNewEmployee] = useState({ name: '', email: '', password: '' });
   const [addingStaff, setAddingStaff] = useState(false);
@@ -32,12 +39,14 @@ const Settings = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [profileData, staffData] = await Promise.all([
+        const [profileData, staffData, loyaltyData] = await Promise.all([
           getShopProfile(),
-          getEmployees()
+          getEmployees(),
+          getLoyaltySettings()
         ]);
         setProfile(profileData);
         setEmployees(staffData);
+        setLoyalty(loyaltyData);
       } catch (e) {
         console.error(e);
       }
@@ -56,7 +65,8 @@ const Settings = () => {
     setSaving(true);
     try {
       await updateShopProfile(profile);
-      alert("Shop Settings saved successfully!");
+      await updateLoyaltySettings(loyalty);
+      alert("Settings saved successfully!");
       window.location.reload();
     } catch (error) {
       alert("Failed to save settings.");
@@ -152,6 +162,9 @@ const Settings = () => {
         </button>
         <button className={`${styles.tabBtn} ${activeTab === 'staff' ? styles.active : ''}`} onClick={() => setActiveTab('staff')}>
           <Users size={18} /> Staff
+        </button>
+        <button className={`${styles.tabBtn} ${activeTab === 'loyalty' ? styles.active : ''}`} onClick={() => setActiveTab('loyalty')}>
+          <Gift size={18} /> Loyalty
         </button>
       </div>
 
@@ -320,6 +333,68 @@ const Settings = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* TAB 5: LOYALTY SETTINGS */}
+        {activeTab === 'loyalty' && (
+          <form onSubmit={handleSubmit} className={styles.tabPane}>
+            <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Loyalty Program Settings</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Configure how customers earn and spend reward points.</p>
+
+            <div className={styles.formGroup} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label>Spend Amount for 1 Point (৳)</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  required
+                  value={loyalty.spendPerPoint} 
+                  onChange={(e) => setLoyalty({...loyalty, spendPerPoint: Number(e.target.value)})} 
+                />
+              </div>
+              <div>
+                <label>Discount Value per Point (৳)</label>
+                <input 
+                  type="number" 
+                  min="0.1" 
+                  step="0.1"
+                  required
+                  value={loyalty.discountPerPoint} 
+                  onChange={(e) => setLoyalty({...loyalty, discountPerPoint: Number(e.target.value)})} 
+                />
+              </div>
+            </div>
+
+            <div className={styles.formGroup} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label>Minimum Points to Redeem</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  required
+                  value={loyalty.minRedeemPoints} 
+                  onChange={(e) => setLoyalty({...loyalty, minRedeemPoints: Number(e.target.value)})} 
+                />
+              </div>
+              <div>
+                <label>Enable Self-Service Redeem</label>
+                <select 
+                  value={loyalty.enableSelfRedeem ? 'yes' : 'no'} 
+                  onChange={(e) => setLoyalty({...loyalty, enableSelfRedeem: e.target.value === 'yes'})}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <option value="yes">Yes, via Tracking Link</option>
+                  <option value="no">No, Staff Only</option>
+                </select>
+              </div>
+            </div>
+
+            <div className={styles.actions}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                <Save size={18} /> {saving ? 'Saving...' : 'Save Loyalty Settings'}
+              </button>
+            </div>
+          </form>
         )}
 
       </div>

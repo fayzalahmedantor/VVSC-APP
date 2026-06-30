@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getCustomers } from '../services/customerService';
+import { getCustomers, getAllDueCollections } from '../services/customerService';
 import { getMechanics } from '../services/mechanicService';
 import { getExpenses } from '../services/expenseService';
+import { getAllSalesHistory } from '../services/inventoryService';
 import { getShopProfile } from '../services/settingsService';
 import { Calendar, Filter, Download, Printer } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
@@ -41,18 +42,34 @@ const Report = () => {
       
       let allTx = [];
       
-      // Derive transactions from customers (advance payments)
+      // Derive transactions from customers (advance payments during creation/update before due_collections existed)
+      // Note: We might still want this if they paid advance initially, but let's keep it to reflect old data.
       customers.forEach(c => {
         if (Number(c.advance) > 0) {
           allTx.push({
             id: `cust_${c.id}`,
-            date: c.updatedAt || c.createdAt || new Date().toISOString(),
+            date: c.createdAt || new Date().toISOString(), // Use createdAt so we don't double count if they just updated
             type: 'Income',
-            source: 'Customer Repair',
+            source: 'Customer Advance (Initial)',
             name: c.name,
             amount: Number(c.advance)
           });
         }
+      });
+      
+      // Fetch Due Collections
+      const dueCollections = await getAllDueCollections();
+      dueCollections.forEach(due => {
+        // Find customer name
+        const cust = customers.find(c => c.id === due.customerId);
+        allTx.push({
+          id: `due_${due.id}`,
+          date: due.createdAt || new Date().toISOString(),
+          type: 'Income',
+          source: 'Due Collection',
+          name: cust ? cust.name : 'Unknown Customer',
+          amount: Number(due.amount)
+        });
       });
       
       // Derive transactions from mechanics (paid amount)
@@ -79,6 +96,19 @@ const Report = () => {
           source: e.category,
           name: e.note || 'General Expense',
           amount: Number(e.amount)
+        });
+      });
+      
+      // Fetch product sales
+      const sales = await getAllSalesHistory();
+      sales.forEach(sale => {
+        allTx.push({
+          id: `sale_${sale.id}`,
+          date: sale.createdAt || new Date().toISOString(),
+          type: 'Income',
+          source: 'Product Sale',
+          name: sale.productName + ` (${Math.abs(sale.quantityChange)} qty)`,
+          amount: Number(sale.totalPrice || 0)
         });
       });
       

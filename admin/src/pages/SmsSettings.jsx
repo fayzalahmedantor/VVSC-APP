@@ -11,7 +11,8 @@ const SmsSettings = () => {
   
   const [smsSettings, setSmsSettings] = useState({
     apiUrl: '', apiKey: '', senderId: '',
-    msgReceived: '', msgReady: '', msgDelivered: '', msgCancelled: '', msgWhatsApp: ''
+    msgReceived: '', msgReady: '', msgDelivered: '', msgCancelled: '', msgWhatsApp: '',
+    msgDueReminder: '', msgFollowUp: '', msgRedeem: ''
   });
 
   const [customers, setCustomers] = useState([]);
@@ -87,7 +88,10 @@ const SmsSettings = () => {
         msgReady: defaultSmsSettings.msgReady,
         msgDelivered: defaultSmsSettings.msgDelivered,
         msgCancelled: defaultSmsSettings.msgCancelled,
-        msgWhatsApp: defaultSmsSettings.msgWhatsApp
+        msgWhatsApp: defaultSmsSettings.msgWhatsApp,
+        msgDueReminder: defaultSmsSettings.msgDueReminder,
+        msgFollowUp: defaultSmsSettings.msgFollowUp,
+        msgRedeem: defaultSmsSettings.msgRedeem
       });
     }
   };
@@ -133,7 +137,12 @@ const SmsSettings = () => {
     
     for (const customer of dueFollowUps) {
       if (!customer.phone) continue;
-      const msg = `প্রিয় ${customer.name}, ৬ মাস আগে আপনার ${customer.brand} ${customer.deviceType} টি মেরামত করা হয়েছিল। আশা করি ডিভাইসটি ভালো চলছে। যেকোনো প্রয়োজনে আমাদের শপে আপনাকে স্বাগতম!`;
+      const template = smsSettings.msgFollowUp || defaultSmsSettings.msgFollowUp;
+      // Using a basic string replacement instead of full replaceVariables just in case, but replaceVariables is better if imported.
+      // Wait, we can import replaceVariables at the top! I'll just use string replacement for {DeviceType} and {CustomerName}
+      let msg = template.replace(/{CustomerName}/g, customer.name || 'Customer');
+      msg = msg.replace(/{DeviceType}/g, `${customer.brand || ''} ${customer.deviceType || ''}`.trim());
+      
       const success = await sendSMS(customer.phone, msg, smsSettings);
       if (success) {
         successCount++;
@@ -249,6 +258,22 @@ const SmsSettings = () => {
               <label>WhatsApp Invoice Template</label>
               <textarea name="msgWhatsApp" value={smsSettings.msgWhatsApp || ''} onChange={handleSmsChange} rows="5" />
               <small style={{ color: 'var(--text-muted)' }}>Use {"{ShopName}"} and {"{Status}"} along with other variables.</small>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Due Reminder Template (Sent from Due Page)</label>
+              <textarea name="msgDueReminder" value={smsSettings.msgDueReminder || ''} onChange={handleSmsChange} rows="3" />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Follow-up Template (6-Month Reminder)</label>
+              <textarea name="msgFollowUp" value={smsSettings.msgFollowUp || ''} onChange={handleSmsChange} rows="3" />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Point Redeem SMS Template</label>
+              <textarea name="msgRedeem" value={smsSettings.msgRedeem || ''} onChange={handleSmsChange} rows="3" />
+              <small style={{ color: 'var(--text-muted)' }}>Use {"{RedeemedPoints}"} and {"{DiscountAmount}"} along with other variables.</small>
             </div>
 
             <div className={styles.actions} style={{ display: 'flex', gap: '12px' }}>

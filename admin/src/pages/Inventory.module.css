@@ -178,6 +178,8 @@
 }
 
 .formGroup input, .formGroup textarea, .formGroup select {
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: var(--radius-sm);
@@ -207,6 +209,9 @@
 
 .restock { color: #f57c00; background: rgba(245, 124, 0, 0.1); }
 .restock:hover { background: #f57c00; color: white; }
+
+.sell { color: var(--accent-teal); background: rgba(0, 212, 170, 0.1); }
+.sell:hover { background: var(--accent-teal); color: white; }
 
 .settingsList {
   list-style: none;
@@ -254,6 +259,17 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.clickableProductName {
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickableProductName:hover {
+  color: var(--text-main);
 }
 
 /* Responsive Styles */

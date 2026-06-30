@@ -45,6 +45,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select option",
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
         style={{
+          width: '100%',
           padding: '14px 16px',
           border: isOpen ? '1px solid var(--primary, #2D2A54)' : '1px solid rgba(0,0,0,0.1)',
           borderRadius: '12px',

@@ -114,3 +114,109 @@ export const addLoyaltyPoints = async (id, currentPoints, pointsToAdd) => {
     throw error;
   }
 };
+
+// --- Due Collection Functions ---
+
+const DUE_COLLECTION_NAME = 'due_collections';
+
+export const collectCustomerDue = async (customerId, amount, oldAdvance, oldDue, nextPaymentDate = null, note = '') => {
+  try {
+    const now = new Date().toISOString();
+    
+    // 1. Create a log in due_collections
+    await addDoc(collection(db, DUE_COLLECTION_NAME), {
+      customerId,
+      amount: Number(amount),
+      createdAt: now,
+      note,
+      nextPaymentDate
+    });
+
+    // 2. Update the customer's balance
+    const customerRef = doc(db, COLLECTION_NAME, customerId);
+    const updateData = {
+      advance: oldAdvance + Number(amount),
+      dueBalance: oldDue - Number(amount),
+      updatedAt: now
+    };
+    if (nextPaymentDate) {
+      updateData.nextPaymentDate = nextPaymentDate;
+    } else {
+      updateData.nextPaymentDate = null; // clear it if they didn't specify or if they paid in full
+    }
+
+    await updateDoc(customerRef, updateData);
+    return true;
+  } catch (error) {
+    console.error("Error collecting due: ", error);
+    throw error;
+  }
+};
+
+export const getDueHistory = async (customerId) => {
+  try {
+    const q = query(
+      collection(db, DUE_COLLECTION_NAME),
+      where('customerId', '==', customerId)
+    );
+    const querySnapshot = await getDocs(q);
+    const history = [];
+    querySnapshot.forEach((doc) => {
+      history.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Sort locally (newest first)
+    history.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return history;
+  } catch (error) {
+    console.error("Error getting due history: ", error);
+    throw error;
+  }
+};
+
+export const getAllDueCollections = async () => {
+  try {
+    const q = query(collection(db, DUE_COLLECTION_NAME));
+    const querySnapshot = await getDocs(q);
+    const history = [];
+    querySnapshot.forEach((doc) => {
+      history.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Sort locally
+    history.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return history;
+  } catch (error) {
+    console.error("Error getting all due collections: ", error);
+    throw error;
+  }
+};
+
+export const deleteDueCollection = async (logId, customerId, amount) => {
+  try {
+    // 1. Delete the log
+    await deleteDoc(doc(db, DUE_COLLECTION_NAME, logId));
+
+    // 2. Fetch current customer data to revert
+    const q = query(collection(db, COLLECTION_NAME));
+    const querySnapshot = await getDocs(q);
+    let customerDoc = null;
+    querySnapshot.forEach(doc => {
+      if (doc.id === customerId) customerDoc = doc.data();
+    });
+
+    if (customerDoc) {
+      const customerRef = doc(db, COLLECTION_NAME, customerId);
+      await updateDoc(customerRef, {
+        advance: Number(customerDoc.advance || 0) - Number(amount),
+        dueBalance: Number(customerDoc.dueBalance || 0) + Number(amount),
+        updatedAt: new Date().toISOString()
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error deleting due collection: ", error);
+    throw error;
+  }
+};
