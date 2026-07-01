@@ -9,7 +9,7 @@ import { getShopProfile } from '../../services/settingsService';
 import styles from './Layout.module.css';
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
-  const { userName, logout } = useAuth();
+  const { userRole, userName, logout } = useAuth();
   const navigate = useNavigate();
   const [logo, setLogo] = React.useState('/logo.png');
   const [ownerName, setOwnerName] = React.useState('');
@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     fetchProfile();
   }, []);
 
-  const displayUserName = ownerName || userName || 'Owner';
+  const displayUserName = userRole === 'admin' && ownerName ? ownerName : (userName || 'User');
 
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
@@ -69,29 +69,33 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           <Star /> <span>Loyalty</span>
         </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/mechanics" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <Wrench size={20} /> <span>Mechanics (B2B)</span>
-        </NavLink>
+        {userRole === 'admin' && (
+          <>
+            <NavLink onClick={closeSidebar} to="/mechanics" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <Wrench size={20} /> <span>Mechanics (B2B)</span>
+            </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/suppliers" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <Truck size={20} /> <span>Suppliers</span>
-        </NavLink>
+            <NavLink onClick={closeSidebar} to="/suppliers" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <Truck size={20} /> <span>Suppliers</span>
+            </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/expenses" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <Wallet size={20} /> <span>Expenses</span>
-        </NavLink>
+            <NavLink onClick={closeSidebar} to="/expenses" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <Wallet size={20} /> <span>Expenses</span>
+            </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/report" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <BarChart size={20} /> <span>Reports</span>
-        </NavLink>
+            <NavLink onClick={closeSidebar} to="/report" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <BarChart size={20} /> <span>Reports</span>
+            </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <Settings size={20} /> <span>Shop Settings</span>
-        </NavLink>
+            <NavLink onClick={closeSidebar} to="/settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <Settings size={20} /> <span>Shop Settings</span>
+            </NavLink>
 
-        <NavLink onClick={closeSidebar} to="/sms-settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-          <MessageSquare size={20} /> <span>SMS Settings</span>
-        </NavLink>
+            <NavLink onClick={closeSidebar} to="/sms-settings" className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+              <MessageSquare size={20} /> <span>SMS Settings</span>
+            </NavLink>
+          </>
+        )}
       </nav>
 
       <div className={styles.sidebarFooter}>
@@ -99,7 +103,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(displayUserName)}&background=00D4AA&color=fff`} alt="User" className={styles.userAvatar} />
           <div className={styles.userInfo} style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
             <span className={styles.userName} style={{ fontSize: '13px', color: 'var(--text-sidebar)', fontWeight: '500', display: 'block' }}>
-              Owner
+              {userRole === 'admin' ? 'Admin' : 'Employee'}
             </span>
             <span className={styles.userRole} style={{ fontSize: '15px', color: 'white', fontWeight: '600', marginTop: '2px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {displayUserName}

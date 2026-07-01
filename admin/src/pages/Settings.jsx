@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile, getLoanPassword, updateLoanPassword } from '../services/settingsService';
-import { Save, Store, Palette, FileText, Star, Lock } from 'lucide-react';
+import { Save, Store, Palette, FileText, Star, Lock, Users } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
+import { getEmployees } from '../services/employeeAuthService';
+import { seedDatabase } from '../utils/seeder';
 import styles from './Settings.module.css';
 
 const Settings = () => {
