@@ -11,9 +11,15 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', action: null, isDanger: false, confirmText: 'Confirm' });
   const [accessModal, setAccessModal] = useState({ isOpen: false, employee: null });
   const [activeTab, setActiveTab] = useState('general');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
   
   const [profile, setProfile] = useState({
     shopName: '',
@@ -75,33 +81,40 @@ const Settings = () => {
     setSaving(true);
     try {
       await updateShopProfile(profile);
-      alert("Shop Settings saved successfully!");
-      window.location.reload();
+      showToast("Shop Settings saved successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      alert("Failed to save settings.");
+      showToast("Failed to save settings.", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleSeed = async () => {
-    if (window.confirm('Are you sure you want to load Demo Data? This will add fake customers, inventory, expenses etc.')) {
-      setIsSeeding(true);
-      const success = await seedDatabase();
-      setIsSeeding(false);
-      if (success) {
-        alert('Demo Data Loaded Successfully! Please refresh the page.');
-        window.location.reload();
-      } else {
-        alert('Failed to load demo data.');
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Load Demo Data",
+      message: "Are you sure you want to load Demo Data? This will add fake customers, inventory, expenses etc.",
+      action: async () => {
+        setIsSeeding(true);
+        setConfirmModal({ isOpen: false });
+        const success = await seedDatabase();
+        setIsSeeding(false);
+        if (success) {
+          showToast('Demo Data Loaded Successfully!');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showToast('Failed to load demo data.', 'error');
+        }
+      },
+      confirmText: "Load Data"
+    });
   };
 
   const handleAddStaff = async (e) => {
     e.preventDefault();
     if (newEmployee.password.length < 6) {
-      alert("Password must be at least 6 characters.");
+      showToast("Password must be at least 6 characters.", "error");
       return;
     }
     setAddingStaff(true);
@@ -109,17 +122,24 @@ const Settings = () => {
       const added = await createEmployee(newEmployee.name, newEmployee.email, newEmployee.password);
       setEmployees(prev => [...prev, added]);
       setNewEmployee({ name: '', email: '', password: '' });
-      alert("Staff account created successfully!");
+      showToast("Staff account created successfully!");
     } catch (error) {
       console.error(error);
-      alert("Failed to create staff account. Email might be in use.");
+      showToast("Failed to create staff account. Email might be in use.", "error");
     } finally {
       setAddingStaff(false);
     }
   };
 
   const handleDeleteStaff = (id) => {
-    setConfirmModal({ isOpen: true, id });
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Staff",
+      message: "Are you sure you want to delete this staff account? They will no longer be able to log in.",
+      action: () => executeDeleteStaff(id),
+      isDanger: true,
+      confirmText: "Delete"
+    });
   };
 
   const handleEditAccess = (employee) => {
@@ -148,23 +168,23 @@ const Settings = () => {
       await updateEmployeeAccess(id, { accessBlocked, startTime, endTime });
       setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, accessBlocked, startTime, endTime } : emp));
       setAccessModal({ isOpen: false, employee: null });
-      alert("Access updated successfully!");
+      showToast("Access updated successfully!");
     } catch (error) {
-      alert("Failed to update access.");
+      showToast("Failed to update access.", "error");
     } finally {
       setSaving(false);
     }
   };
 
-  const executeDeleteStaff = async () => {
-    const id = confirmModal.id;
+  const executeDeleteStaff = async (id) => {
     if (!id) return;
     try {
       await deleteEmployeeAccount(id);
       setEmployees(prev => prev.filter(emp => emp.id !== id));
-      setConfirmModal({ isOpen: false, id: null });
+      setConfirmModal({ isOpen: false });
+      showToast("Staff deleted successfully!");
     } catch (error) {
-      alert("Failed to delete account.");
+      showToast("Failed to delete account.", "error");
     }
   };
 
@@ -173,40 +193,57 @@ const Settings = () => {
     try {
       await updateUserRoleAndStatus(id, 'employee', true);
       setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: 'employee', isActive: true } : emp));
-      alert("User approved successfully!");
+      showToast("User approved successfully!");
     } catch (err) {
-      alert("Failed to approve user.");
+      showToast("Failed to approve user.", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteUserCompletely = async (id) => {
-    if (window.confirm("Are you sure you want to completely remove this request?")) {
-      setSaving(true);
-      try {
-        await deleteUserCompletely(id);
-        setEmployees(prev => prev.filter(emp => emp.id !== id));
-      } catch (err) {
-        alert("Failed to delete user request.");
-      } finally {
-        setSaving(false);
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Reject & Delete",
+      message: "Are you sure you want to completely remove this request?",
+      action: async () => {
+        setSaving(true);
+        setConfirmModal({ isOpen: false });
+        try {
+          await deleteUserCompletely(id);
+          setEmployees(prev => prev.filter(emp => emp.id !== id));
+          showToast("User request deleted.");
+        } catch (err) {
+          showToast("Failed to delete user request.", "error");
+        } finally {
+          setSaving(false);
+        }
+      },
+      isDanger: true,
+      confirmText: "Delete"
+    });
   };
 
   const handleRoleChange = async (id, newRole) => {
-    if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
-      setSaving(true);
-      try {
-        await updateUserRoleAndStatus(id, newRole, true);
-        setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: newRole } : emp));
-      } catch (err) {
-        alert("Failed to change user role.");
-      } finally {
-        setSaving(false);
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Change Role",
+      message: `Are you sure you want to change this user's role to ${newRole}?`,
+      action: async () => {
+        setSaving(true);
+        setConfirmModal({ isOpen: false });
+        try {
+          await updateUserRoleAndStatus(id, newRole, true);
+          setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: newRole } : emp));
+          showToast(`Role changed to ${newRole}!`);
+        } catch (err) {
+          showToast("Failed to change user role.", "error");
+        } finally {
+          setSaving(false);
+        }
+      },
+      confirmText: "Change Role"
+    });
   };
 
   const activeStaff = employees.filter(emp => emp.role !== 'pending');
@@ -216,7 +253,7 @@ const Settings = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 1024 * 1024) {
-        alert("Image size should be less than 1MB");
+        showToast("Image size should be less than 1MB", "error");
         return;
       }
       const reader = new FileReader();
@@ -624,11 +661,11 @@ const Settings = () => {
             e.preventDefault();
             
             if (currentSavedPassword && oldPassword !== currentSavedPassword) {
-              alert("Old password does not match!");
+              showToast("Old password does not match!", "error");
               return;
             }
             if (newLoanPassword !== confirmPassword) {
-              alert("New password and confirm password do not match!");
+              showToast("New password and confirm password do not match!", "error");
               return;
             }
 
@@ -639,9 +676,9 @@ const Settings = () => {
               setOldPassword('');
               setNewLoanPassword('');
               setConfirmPassword('');
-              alert("Security settings saved!");
+              showToast("Security settings saved!");
             } catch (err) {
-              alert("Failed to save security settings.");
+              showToast("Failed to save security settings.", "error");
             }
             setSaving(false);
           }} className={styles.tabPane}>
@@ -697,12 +734,12 @@ const Settings = () => {
       
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title="Delete Staff"
-        message="Are you sure you want to delete this staff account? They will no longer be able to log in."
-        onConfirm={executeDeleteStaff}
-        onCancel={() => setConfirmModal({ isOpen: false, id: null })}
-        confirmText="Delete"
-        isDanger={true}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.action}
+        onCancel={() => setConfirmModal({ isOpen: false })}
+        confirmText={confirmModal.confirmText}
+        isDanger={confirmModal.isDanger}
       />
       
       {/* Access Settings Modal */}
@@ -773,6 +810,27 @@ const Settings = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TOAST NOTIFICATION */}
+      {toast.show && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: toast.type === 'error' ? 'var(--danger)' : 'var(--primary)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'slideUp 0.3s ease-out'
+        }}>
+          {toast.message}
         </div>
       )}
     </div>
