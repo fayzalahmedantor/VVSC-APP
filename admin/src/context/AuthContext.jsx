@@ -112,10 +112,26 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
           } else {
             if (user.email === 'fayzalahmedantor@gmail.com') {
+              // Create the admin document in Firestore if it doesn't exist
+              // This is necessary so Firestore Security Rules recognize this user as an Admin
+              try {
+                await setDoc(doc(db, 'users', user.uid), {
+                  name: user.displayName || 'Super Admin',
+                  email: user.email,
+                  role: 'admin',
+                  isActive: true,
+                  accessBlocked: false,
+                  createdAt: new Date().toISOString()
+                }, { merge: true });
+              } catch (e) {
+                console.error("Failed to create master admin document:", e);
+              }
+              
               setUserRole('admin');
-              setUserName('Admin User');
+              setUserName(user.displayName || 'Admin User');
               setCurrentUser(user);
               setLoading(false);
+              return;
             } else {
               try {
                 await setDoc(doc(db, 'users', user.uid), {
