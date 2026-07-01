@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile, getLoanPassword, updateLoanPassword } from '../services/settingsService';
-import { getEmployees, createEmployee, deleteEmployeeAccount } from '../services/employeeAuthService';
-import { seedDatabase } from '../utils/seeder';
-import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star, Lock } from 'lucide-react';
+import { getEmployees, createEmployee, deleteEmployeeAccount, updateEmployeeAccess } from '../services/employeeAuthService';
+import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star, Lock, Settings as SettingsIcon, X } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
@@ -13,6 +12,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
+  const [accessModal, setAccessModal] = useState({ isOpen: false, employee: null });
   const [activeTab, setActiveTab] = useState('general');
   
   const [profile, setProfile] = useState({
@@ -120,6 +120,40 @@ const Settings = () => {
 
   const handleDeleteStaff = (id) => {
     setConfirmModal({ isOpen: true, id });
+  };
+
+  const handleEditAccess = (employee) => {
+    setAccessModal({
+      isOpen: true,
+      employee: { ...employee }
+    });
+  };
+
+  const handleAccessChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setAccessModal(prev => ({
+      ...prev,
+      employee: {
+        ...prev.employee,
+        [name]: type === 'checkbox' ? checked : value
+      }
+    }));
+  };
+
+  const submitAccessUpdate = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const { id, accessBlocked, startTime, endTime } = accessModal.employee;
+      await updateEmployeeAccess(id, { accessBlocked, startTime, endTime });
+      setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, accessBlocked, startTime, endTime } : emp));
+      setAccessModal({ isOpen: false, employee: null });
+      alert("Access updated successfully!");
+    } catch (error) {
+      alert("Failed to update access.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const executeDeleteStaff = async () => {
@@ -479,12 +513,21 @@ const Settings = () => {
                 {employees.map(emp => (
                   <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
                     <div>
-                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>{emp.name}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{emp.email}</div>
+                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>
+                        {emp.name} {emp.accessBlocked && <span style={{fontSize: '11px', background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>BLOCKED</span>}
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {emp.email} • {emp.startTime && emp.endTime ? `Shift: ${emp.startTime} to ${emp.endTime}` : 'No shift schedule'}
+                      </div>
                     </div>
-                    <button onClick={() => handleDeleteStaff(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Delete Account">
-                      <Trash2 size={18} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => handleEditAccess(emp)} className={styles.iconBtn} style={{ color: 'var(--primary)', background: 'rgba(74, 0, 224, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Edit Access & Shift">
+                        <SettingsIcon size={18} />
+                      </button>
+                      <button onClick={() => handleDeleteStaff(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Delete Account">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -578,6 +621,77 @@ const Settings = () => {
         confirmText="Delete"
         isDanger={true}
       />
+      
+      {/* Access Settings Modal */}
+      {accessModal.isOpen && accessModal.employee && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', width: '90%', maxWidth: '450px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--text-main)' }}>Access Settings - {accessModal.employee.name}</h2>
+              <button onClick={() => setAccessModal({ isOpen: false, employee: null })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={submitAccessUpdate}>
+              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 71, 87, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 71, 87, 0.2)' }}>
+                  <input 
+                    type="checkbox" 
+                    id="accessBlocked" 
+                    name="accessBlocked"
+                    checked={accessModal.employee.accessBlocked || false}
+                    onChange={handleAccessChange}
+                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <label htmlFor="accessBlocked" style={{ display: 'block', margin: 0, fontWeight: 700, color: 'var(--danger)', cursor: 'pointer' }}>
+                      Block Access
+                    </label>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>If checked, this user cannot log in.</div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Shift Schedule (Optional)</h4>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>Set allowed login time. Leave both empty for 24/7 access.</p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                      <label>Start Time</label>
+                      <input 
+                        type="time" 
+                        name="startTime"
+                        value={accessModal.employee.startTime || ''}
+                        onChange={handleAccessChange}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                      />
+                    </div>
+                    <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                      <label>End Time</label>
+                      <input 
+                        type="time" 
+                        name="endTime"
+                        value={accessModal.employee.endTime || ''}
+                        onChange={handleAccessChange}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button type="button" className="btn" onClick={() => setAccessModal({ isOpen: false, employee: null })}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Settings'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

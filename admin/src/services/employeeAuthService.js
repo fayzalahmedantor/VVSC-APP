@@ -34,6 +34,9 @@ export const createEmployee = async (name, email, password) => {
       email,
       role: 'employee',
       isActive: true,
+      accessBlocked: false,
+      startTime: '',
+      endTime: '',
       createdAt: new Date().toISOString()
     });
 
@@ -57,6 +60,20 @@ export const deleteEmployeeAccount = async (employeeId) => {
     return true;
   } catch (error) {
     console.error("Error deleting employee:", error);
+    throw error;
+  }
+};
+
+export const updateEmployeeAccess = async (employeeId, accessData) => {
+  try {
+    await updateDoc(doc(db, 'users', employeeId), {
+      accessBlocked: accessData.accessBlocked,
+      startTime: accessData.startTime || '',
+      endTime: accessData.endTime || ''
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating employee access:", error);
     throw error;
   }
 };
