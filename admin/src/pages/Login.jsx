@@ -9,12 +9,25 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [logo, setLogo] = useState('/logo.png');
-  const { login, loginWithGoogle, currentUser } = useAuth();
+  const { login, loginWithGoogle, resetPassword, currentUser } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    // Check for auth messages from AuthContext
+    const authError = sessionStorage.getItem('authError');
+    const authSuccess = sessionStorage.getItem('authSuccess');
+    if (authError) {
+      setError(authError);
+      sessionStorage.removeItem('authError');
+    }
+    if (authSuccess) {
+      setSuccess(authSuccess);
+      sessionStorage.removeItem('authSuccess');
+    }
+
     if (currentUser) {
       navigate('/');
     }
@@ -32,22 +45,22 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       setError('');
+      setSuccess('');
       setLoading(true);
       await login(email, password);
-      // Navigation is handled by the useEffect watching currentUser
+      // Let the useEffect handle the navigation when currentUser changes
     } catch (err) {
       setError('Failed to log in. Please check your credentials.');
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
     try {
       setError('');
+      setSuccess('');
       setLoading(true);
       await loginWithGoogle();
       // Navigation is handled by the useEffect watching currentUser
@@ -55,6 +68,25 @@ const Login = () => {
       if (err.code !== 'auth/popup-closed-by-user') {
         setError('Failed to log in with Google.');
       }
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first to reset your password.');
+      setSuccess('');
+      return;
+    }
+    try {
+      setLoading(true);
+      setError('');
+      await resetPassword(email);
+      setSuccess('A password reset link has been sent to your email. Please check your inbox and spam folder.');
+    } catch (err) {
+      setError('Failed to send password reset email. Please make sure the email is correct.');
+      setSuccess('');
+    } finally {
       setLoading(false);
     }
   };
@@ -67,9 +99,10 @@ const Login = () => {
           <p>Admin Login</p>
         </div>
         
-        {error && <div className={styles.alert}>{error}</div>}
-        
         <form onSubmit={handleSubmit} className={styles.loginForm}>
+          {error && <div className={styles.alert}>{error}</div>}
+          {success && <div className={styles.successAlert}>{success}</div>}
+          
           <div className={styles.formGroup}>
             <label>Email</label>
             <input 
@@ -82,48 +115,41 @@ const Login = () => {
           </div>
           <div className={styles.formGroup}>
             <label>Password</label>
-            <input 
-              type="password" 
-              required 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="••••••••••"
+              required
             />
           </div>
-          
-          <button disabled={loading} className="btn btn-primary" type="submit" style={{width: '100%', marginTop: '16px'}}>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <button 
+              type="button" 
+              onClick={handleForgotPassword}
+              style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+              disabled={loading}
+            >
+              Forgot Password?
+            </button>
+          </div>
+
+          <button disabled={loading} className={styles.loginBtn} type="submit">
             {loading ? 'Logging in...' : 'Login'}
           </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0 12px 0' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.1)' }}></div>
-            <span style={{ padding: '0 12px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, letterSpacing: '1px' }}>OR</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.1)' }}></div>
+          <div className={styles.divider}>
+            <div className={styles.dividerLine}></div>
+            <span className={styles.dividerText}>OR</span>
+            <div className={styles.dividerLine}></div>
           </div>
           
           <button 
             type="button" 
             disabled={loading} 
             onClick={handleGoogleLogin} 
-            style={{ 
-              width: '100%', 
-              padding: '12px', 
-              background: '#ffffff', 
-              color: '#3c4043', 
-              border: '1px solid #dadce0', 
-              borderRadius: '10px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '12px', 
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontSize: '15px',
-              transition: 'background-color 0.2s',
-              boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
+            className={styles.googleBtn}
           >
             <svg width="20" height="20" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>

@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -28,6 +29,10 @@ export const AuthProvider = ({ children }) => {
     return signInWithPopup(auth, provider);
   };
 
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
   const logout = () => {
     return signOut(auth);
   };
@@ -46,7 +51,7 @@ export const AuthProvider = ({ children }) => {
             
             if (data.role === 'pending') {
               await signOut(auth);
-              alert("Your account is still waiting for Admin approval.");
+              sessionStorage.setItem('authError', "Your account is still waiting for Admin approval.");
               setUserRole(null);
               setCurrentUser(null);
               setLoading(false);
@@ -55,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
             if (data.isActive === false || data.role === 'disabled') {
               await signOut(auth);
-              alert("Your account has been disabled.");
+              sessionStorage.setItem('authError', "Your account has been disabled.");
               setUserRole(null);
               setCurrentUser(null);
               setLoading(false);
@@ -122,11 +127,11 @@ export const AuthProvider = ({ children }) => {
                   createdAt: new Date().toISOString()
                 });
                 await signOut(auth);
-                alert("Account created! Waiting for Admin approval.");
+                sessionStorage.setItem('authSuccess', "Account created! Waiting for Admin approval.");
               } catch (err) {
                 console.error("Error creating pending user:", err);
                 await signOut(auth);
-                alert("Access Denied: You do not have permission to access this system.");
+                sessionStorage.setItem('authError', "Access Denied: You do not have permission to access this system.");
               }
               setUserRole(null);
               setCurrentUser(null);
@@ -159,6 +164,7 @@ export const AuthProvider = ({ children }) => {
     userName,
     login,
     loginWithGoogle,
+    resetPassword,
     logout
   };
 
