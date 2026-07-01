@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile, getLoanPassword, updateLoanPassword } from '../services/settingsService';
-import { getEmployees, createEmployee, deleteEmployeeAccount, updateEmployeeAccess, updateUserRoleAndStatus, deleteUserCompletely } from '../services/employeeAuthService';
-import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star, Lock, Settings as SettingsIcon, X } from 'lucide-react';
+import { Save, Store, Palette, FileText, Star, Lock } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
 
@@ -111,143 +110,7 @@ const Settings = () => {
     });
   };
 
-  const handleAddStaff = async (e) => {
-    e.preventDefault();
-    if (newEmployee.password.length < 6) {
-      showToast("Password must be at least 6 characters.", "error");
-      return;
-    }
-    setAddingStaff(true);
-    try {
-      const added = await createEmployee(newEmployee.name, newEmployee.email, newEmployee.password);
-      setEmployees(prev => [...prev, added]);
-      setNewEmployee({ name: '', email: '', password: '' });
-      showToast("Staff account created successfully!");
-    } catch (error) {
-      console.error(error);
-      showToast("Failed to create staff account. Email might be in use.", "error");
-    } finally {
-      setAddingStaff(false);
-    }
-  };
 
-  const handleDeleteStaff = (id) => {
-    setConfirmModal({
-      isOpen: true,
-      title: "Delete Staff",
-      message: "Are you sure you want to delete this staff account? They will no longer be able to log in.",
-      action: () => executeDeleteStaff(id),
-      isDanger: true,
-      confirmText: "Delete"
-    });
-  };
-
-  const handleEditAccess = (employee) => {
-    setAccessModal({
-      isOpen: true,
-      employee: { ...employee }
-    });
-  };
-
-  const handleAccessChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setAccessModal(prev => ({
-      ...prev,
-      employee: {
-        ...prev.employee,
-        [name]: type === 'checkbox' ? checked : value
-      }
-    }));
-  };
-
-  const submitAccessUpdate = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const { id, accessBlocked, startTime, endTime } = accessModal.employee;
-      await updateEmployeeAccess(id, { accessBlocked, startTime, endTime });
-      setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, accessBlocked, startTime, endTime } : emp));
-      setAccessModal({ isOpen: false, employee: null });
-      showToast("Access updated successfully!");
-    } catch (error) {
-      showToast("Failed to update access.", "error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const executeDeleteStaff = async (id) => {
-    if (!id) return;
-    try {
-      await deleteEmployeeAccount(id);
-      setEmployees(prev => prev.filter(emp => emp.id !== id));
-      setConfirmModal({ isOpen: false });
-      showToast("Staff deleted successfully!");
-    } catch (error) {
-      showToast("Failed to delete account.", "error");
-    }
-  };
-
-  const handleApproveUser = async (id) => {
-    setSaving(true);
-    try {
-      await updateUserRoleAndStatus(id, 'employee', true);
-      setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: 'employee', isActive: true } : emp));
-      showToast("User approved successfully!");
-    } catch (err) {
-      showToast("Failed to approve user.", "error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteUserCompletely = async (id) => {
-    setConfirmModal({
-      isOpen: true,
-      title: "Reject & Delete",
-      message: "Are you sure you want to completely remove this request?",
-      action: async () => {
-        setSaving(true);
-        setConfirmModal({ isOpen: false });
-        try {
-          await deleteUserCompletely(id);
-          setEmployees(prev => prev.filter(emp => emp.id !== id));
-          showToast("User request deleted.");
-        } catch (err) {
-          showToast("Failed to delete user request.", "error");
-        } finally {
-          setSaving(false);
-        }
-      },
-      isDanger: true,
-      confirmText: "Delete"
-    });
-  };
-
-  const handleRoleChange = async (id, newRole) => {
-    setConfirmModal({
-      isOpen: true,
-      title: "Change Role",
-      message: `Are you sure you want to change this user's role to ${newRole}?`,
-      action: async () => {
-        setSaving(true);
-        setConfirmModal({ isOpen: false });
-        try {
-          await updateUserRoleAndStatus(id, newRole, true);
-          setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: newRole } : emp));
-          showToast(`Role changed to ${newRole}!`);
-        } catch (err) {
-          showToast("Failed to change user role.", "error");
-        } finally {
-          setSaving(false);
-        }
-      },
-      confirmText: "Change Role"
-    });
-  };
-
-  const activeStaff = employees.filter(emp => emp.role !== 'pending');
-  const pendingStaff = employees.filter(emp => emp.role === 'pending');
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -554,108 +417,7 @@ const Settings = () => {
           </form>
         )}
 
-        {/* TAB 4: STAFF */}
-        {activeTab === 'staff' && (
-          <div className={styles.tabPane}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0 }}>Staff Accounts</h3>
-            </div>
-            
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Create separate accounts for your employees. They will only have access to Customer & Inventory pages, keeping settings and reports hidden.</p>
-            
-            <form onSubmit={handleAddStaff} style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-              <h4 style={{ marginTop: 0, marginBottom: '16px' }}>Create New Account</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                  <label>Staff Name</label>
-                  <input type="text" required value={newEmployee.name} onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})} placeholder="e.g., Rahim" />
-                </div>
-                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                  <label>Email ID</label>
-                  <input type="email" required value={newEmployee.email} onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})} placeholder="staff@example.com" />
-                </div>
-                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                  <label>Password (Min 6 chars)</label>
-                  <input type="password" required value={newEmployee.password} onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})} placeholder="••••••••" minLength="6" />
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary" disabled={addingStaff} style={{ width: '100%' }}>
-                <UserPlus size={18} /> {addingStaff ? 'Creating...' : 'Create Account'}
-              </button>
-            </form>
-
-            <h4 style={{ marginBottom: '16px' }}>Active Users</h4>
-            {activeStaff.length === 0 ? (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-main)', borderRadius: '12px', border: '1px dashed rgba(0,0,0,0.1)' }}>
-                No active staff accounts created yet.
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '32px' }}>
-                {activeStaff.map(emp => (
-                  <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div>
-                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {emp.name} 
-                        {emp.accessBlocked && <span style={{fontSize: '11px', background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '4px'}}>BLOCKED</span>}
-                        {emp.role === 'admin' && <span style={{fontSize: '11px', background: 'var(--primary)', color: 'white', padding: '2px 6px', borderRadius: '4px'}}>ADMIN</span>}
-                      </div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        {emp.email} • {emp.startTime && emp.endTime ? `Shift: ${emp.startTime} to ${emp.endTime}` : 'No shift schedule'}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <select
-                        value={emp.role}
-                        onChange={(e) => handleRoleChange(emp.id, e.target.value)}
-                        style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '13px', cursor: 'pointer' }}
-                        disabled={saving}
-                      >
-                        <option value="employee">Staff</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <button onClick={() => handleEditAccess(emp)} className={styles.iconBtn} style={{ color: 'var(--primary)', background: 'rgba(74, 0, 224, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Edit Access & Shift">
-                        <SettingsIcon size={18} />
-                      </button>
-                      <button onClick={() => handleDeleteStaff(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Delete Account">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {pendingStaff.length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <h4 style={{ marginBottom: '16px', color: '#ff9800' }}>Pending Approvals ({pendingStaff.length})</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-                  {pendingStaff.map(emp => (
-                    <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
-                      <div>
-                        <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>
-                          {emp.name}
-                        </div>
-                        <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                          {emp.email} • Waiting for approval
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => handleApproveUser(emp.id)} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '13px', background: '#4caf50', border: 'none' }} disabled={saving}>
-                          Approve as Staff
-                        </button>
-                        <button onClick={() => handleDeleteUserCompletely(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Reject & Delete" disabled={saving}>
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 5: SECURITY */}
+{/* TAB 5: SECURITY */}
         {activeTab === 'security' && (
           <form onSubmit={async (e) => {
             e.preventDefault();
@@ -742,78 +504,7 @@ const Settings = () => {
         isDanger={confirmModal.isDanger}
       />
       
-      {/* Access Settings Modal */}
-      {accessModal.isOpen && accessModal.employee && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-          <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', width: '90%', maxWidth: '450px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--text-main)' }}>Access Settings - {accessModal.employee.name}</h2>
-              <button onClick={() => setAccessModal({ isOpen: false, employee: null })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={submitAccessUpdate}>
-              <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 71, 87, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 71, 87, 0.2)' }}>
-                  <input 
-                    type="checkbox" 
-                    id="accessBlocked" 
-                    name="accessBlocked"
-                    checked={accessModal.employee.accessBlocked || false}
-                    onChange={handleAccessChange}
-                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <label htmlFor="accessBlocked" style={{ display: 'block', margin: 0, fontWeight: 700, color: 'var(--danger)', cursor: 'pointer' }}>
-                      Block Access
-                    </label>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>If checked, this user cannot log in.</div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Shift Schedule (Optional)</h4>
-                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>Set allowed login time. Leave both empty for 24/7 access.</p>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                      <label>Start Time</label>
-                      <input 
-                        type="time" 
-                        name="startTime"
-                        value={accessModal.employee.startTime || ''}
-                        onChange={handleAccessChange}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
-                      />
-                    </div>
-                    <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                      <label>End Time</label>
-                      <input 
-                        type="time" 
-                        name="endTime"
-                        value={accessModal.employee.endTime || ''}
-                        onChange={handleAccessChange}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-              <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                <button type="button" className="btn" onClick={() => setAccessModal({ isOpen: false, employee: null })}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Settings'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* TOAST NOTIFICATION */}
+{/* TOAST NOTIFICATION */}
       {toast.show && (
         <div style={{
           position: 'fixed',
@@ -838,3 +529,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

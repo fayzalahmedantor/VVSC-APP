@@ -7,7 +7,6 @@ import {
   signInWithPopup,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 
 const AuthContext = createContext();
@@ -16,167 +15,31 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null); // 'admin' or 'employee'
-  const [userName, setUserName] = useState(''); // Stores the user's display name
+  const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  };
-
-  const resetPassword = (email) => {
-    return sendPasswordResetEmail(auth, email);
-  };
-
-  const logout = () => {
-    return signOut(auth);
-  };
+  const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
+  const loginWithGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
+  const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+  const logout = () => signOut(auth);
 
   useEffect(() => {
-    let unsubscribeSnapshot = null;
-
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setLoading(true);
-        const docRef = doc(db, 'users', user.uid);
-        
-        unsubscribeSnapshot = onSnapshot(docRef, async (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            
-            if (data.role === 'pending') {
-              await signOut(auth);
-              sessionStorage.setItem('authError', "Your account is still waiting for Admin approval.");
-              setUserRole(null);
-              setCurrentUser(null);
-              setLoading(false);
-              return;
-            }
-
-            if (data.isActive === false || data.role === 'disabled') {
-              await signOut(auth);
-              sessionStorage.setItem('authError', "Your account has been disabled.");
-              setUserRole(null);
-              setCurrentUser(null);
-              setLoading(false);
-              return;
-            }
-
-            if (data.role === 'employee') {
-              if (data.accessBlocked) {
-                await signOut(auth);
-                alert("Your access has been blocked by the admin.");
-                setUserRole(null);
-                setCurrentUser(null);
-                setLoading(false);
-                return;
-              }
-              
-              if (data.startTime && data.endTime) {
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
-                
-                const [startH, startM] = data.startTime.split(':').map(Number);
-                const startMinutes = startH * 60 + startM;
-                
-                const [endH, endM] = data.endTime.split(':').map(Number);
-                const endMinutes = endH * 60 + endM;
-                
-                let isAllowed = false;
-                
-                if (startMinutes <= endMinutes) {
-                  isAllowed = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
-                } else {
-                  isAllowed = currentMinutes >= startMinutes || currentMinutes <= endMinutes;
-                }
-                
-                if (!isAllowed) {
-                  await signOut(auth);
-                  alert(`Access Denied: You are only allowed to access the system between ${data.startTime} and ${data.endTime}.`);
-                  setUserRole(null);
-                  setCurrentUser(null);
-                  setLoading(false);
-                  return;
-                }
-              }
-            }
-
-            setUserRole(data.role || 'employee');
-            setUserName(data.name || (data.role === 'admin' ? 'Admin User' : 'Staff Member'));
-            setCurrentUser(user);
-            setLoading(false);
-          } else {
-            if (user.email === 'fayzalahmedantor@gmail.com') {
-              // Create the admin document in Firestore if it doesn't exist
-              // This is necessary so Firestore Security Rules recognize this user as an Admin
-              try {
-                await setDoc(doc(db, 'users', user.uid), {
-                  name: user.displayName || 'Super Admin',
-                  email: user.email,
-                  role: 'admin',
-                  isActive: true,
-                  accessBlocked: false,
-                  createdAt: new Date().toISOString()
-                }, { merge: true });
-              } catch (e) {
-                console.error("Failed to create master admin document:", e);
-              }
-              
-              setUserRole('admin');
-              setUserName(user.displayName || 'Admin User');
-              setCurrentUser(user);
-              setLoading(false);
-              return;
-            } else {
-              try {
-                await setDoc(doc(db, 'users', user.uid), {
-                  name: user.displayName || user.email?.split('@')[0] || 'Unknown',
-                  email: user.email,
-                  role: 'pending',
-                  isActive: false,
-                  accessBlocked: false,
-                  createdAt: new Date().toISOString()
-                });
-                await signOut(auth);
-                sessionStorage.setItem('authSuccess', "Account created! Waiting for Admin approval.");
-              } catch (err) {
-                console.error("Error creating pending user:", err);
-                await signOut(auth);
-                sessionStorage.setItem('authError', "Access Denied: You do not have permission to access this system.");
-              }
-              setUserRole(null);
-              setCurrentUser(null);
-              setLoading(false);
-            }
-          }
-        }, (error) => {
-          console.error("Auth snapshot error:", error);
-          setLoading(false);
-        });
-
+        setUserName(user.displayName || user.email?.split('@')[0] || 'User');
+        setCurrentUser(user);
       } else {
-        if (unsubscribeSnapshot) unsubscribeSnapshot();
-        setUserRole(null);
         setUserName('');
         setCurrentUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
-    return () => {
-      unsubscribeAuth();
-      if (unsubscribeSnapshot) unsubscribeSnapshot();
-    };
+    return () => unsubscribeAuth();
   }, []);
 
   const value = {
     currentUser,
-    userRole,
     userName,
     login,
     loginWithGoogle,
