@@ -43,17 +43,21 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [currentSavedPassword, setCurrentSavedPassword] = useState('');
 
-
+  const [employees, setEmployees] = useState([]);
+  const [newEmployee, setNewEmployee] = useState({ name: '', email: '', password: '' });
+  const [addingStaff, setAddingStaff] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [profileData, passData] = await Promise.all([
+        const [profileData, staffData, passData] = await Promise.all([
           getShopProfile(),
+          getEmployees(),
           getLoanPassword()
         ]);
         setProfile(profileData);
+        setEmployees(staffData);
         setCurrentSavedPassword(passData || '');
       } catch (e) {
         console.error(e);
@@ -146,7 +150,9 @@ const Settings = () => {
         <button className={`${styles.tabBtn} ${activeTab === 'loyalty' ? styles.active : ''}`} onClick={() => setActiveTab('loyalty')}>
           <Star size={18} /> Loyalty
         </button>
-
+        <button className={`${styles.tabBtn} ${activeTab === 'staff' ? styles.active : ''}`} onClick={() => setActiveTab('staff')}>
+          <Users size={18} /> Staff
+        </button>
         <button className={`${styles.tabBtn} ${activeTab === 'security' ? styles.active : ''}`} onClick={() => setActiveTab('security')}>
           <Lock size={18} /> Security
         </button>
