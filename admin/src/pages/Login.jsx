@@ -65,8 +65,9 @@ const Login = () => {
       await loginWithGoogle();
       // Navigation is handled by the useEffect watching currentUser
     } catch (err) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError('Failed to log in with Google.');
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        setError(`Google Login Error: ${err.message}`);
+        console.error("Google login error:", err);
       }
       setLoading(false);
     }
