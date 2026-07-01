@@ -40,7 +40,7 @@
 .tableContainer {
   overflow-x: auto;
   border-radius: var(--radius-sm);
-  background: white;
+  background: var(--bg-card);
 }
 
 .table {
@@ -75,7 +75,7 @@
 
 .table td {
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
   background: inherit;
 }
@@ -181,7 +181,7 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-main);
   color: var(--text-main);
@@ -219,7 +219,7 @@
   margin: 0 0 16px 0;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
 }
 
@@ -227,7 +227,7 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
   font-size: 14px;
 }
 .settingsItem:last-child { border-bottom: none; }
@@ -248,7 +248,7 @@
 .addSettingForm input {
   flex: 1;
   padding: 8px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   outline: none;
 }

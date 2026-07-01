@@ -166,7 +166,7 @@ const Loans = () => {
               placeholder="Enter Password" 
               value={passwordInput}
               onChange={e => setPasswordInput(e.target.value)}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', marginBottom: '16px', outline: 'none' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', marginBottom: '16px', outline: 'none' }}
               autoFocus
             />
             <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>

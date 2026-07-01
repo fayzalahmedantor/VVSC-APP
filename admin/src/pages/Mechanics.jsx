@@ -368,8 +368,8 @@ const Mechanics = () => {
               
               <div className={styles.formGroup}>
                 <label>Phone Number *</label>
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
-                  <span style={{ padding: '0 12px', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', borderRight: '1px solid rgba(0,0,0,0.1)', height: '100%', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-light)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
+                  <span style={{ padding: '0 12px', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', borderRight: '1px solid var(--border-light)', height: '100%', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
                   <input 
                     required 
                     type="tel" 

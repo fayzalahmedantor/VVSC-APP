@@ -65,7 +65,7 @@
 
 .filterSelect {
   padding: 8px 12px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-main);
   color: var(--text-main);
@@ -100,7 +100,7 @@
 
 .table td {
   padding: 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
   transition: var(--transition);
 }
@@ -200,7 +200,7 @@
 .formGroup select,
 .formGroup textarea {
   padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-main);
   color: var(--text-main);

@@ -99,7 +99,7 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
           </button>
 
           {showNotifications && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '320px', background: 'var(--bg-card)', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.05)', zIndex: 100, overflow: 'hidden', color: 'var(--text-main)' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '320px', background: 'var(--bg-card)', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', border: '1px solid var(--border-color)', zIndex: 100, overflow: 'hidden', color: 'var(--text-main)' }}>
               <div style={{ padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Notifications</span>
                 {notifications.length > 0 && (
@@ -175,11 +175,11 @@ const Topbar = ({ toggleTheme, isDark, openSearch, toggleSidebar }) => {
                   required 
                   value={dateModal.currentDate} 
                   onChange={(e) => setDateModal({ ...dateModal, currentDate: e.target.value })}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }} 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }} 
                 />
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" onClick={() => setDateModal({ isOpen: false, id: null, currentDate: '' })} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                <button type="button" onClick={() => setDateModal({ isOpen: false, id: null, currentDate: '' })} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
                 <button type="submit" style={{ flex: 1, padding: '10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Update</button>
               </div>
             </form>

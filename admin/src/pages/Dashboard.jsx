@@ -208,7 +208,7 @@ const Dashboard = () => {
                 <div>
                   <h3 style={{ marginBottom: '8px', fontSize: '24px', color: 'var(--text-main)' }}>Today's Summary</h3>
                   <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{todayDate}</p>
-                  <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--primary)' }}>৳{stats.loading ? '...' : stats.todaySales}</div>
+                  <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--text-primary)' }}>৳{stats.loading ? '...' : stats.todaySales}</div>
                   <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Today's Sales</div>
                 </div>
               </div>
@@ -285,7 +285,7 @@ const Dashboard = () => {
                   return (
                     <tr key={group.phone}>
                       <td 
-                        style={{ fontWeight: 600, cursor: 'pointer', color: 'var(--primary)' }}
+                        style={{ fontWeight: 600, cursor: 'pointer', color: 'var(--text-primary)' }}
                         onClick={() => setHistoryCustomer(customer)}
                         title="Click to view full profile and history"
                       >
@@ -330,7 +330,7 @@ const Dashboard = () => {
             onClick={() => navigate('/inventory', { state: { filter: 'low-stock' } })}
             style={{ 
             display: 'flex', alignItems: 'center', gap: '16px', 
-            background: '#ffffff', 
+            background: 'var(--bg-card)', 
             border: '1px solid rgba(0,0,0,0.08)',
             padding: '16px 20px', borderRadius: '16px',
             transition: 'all 0.2s ease',
@@ -356,7 +356,7 @@ const Dashboard = () => {
             onClick={() => navigate('/customers', { state: { filter: 'due' } })}
             style={{ 
             display: 'flex', alignItems: 'center', gap: '16px', 
-            background: '#ffffff', 
+            background: 'var(--bg-card)', 
             border: '1px solid rgba(0,0,0,0.08)',
             padding: '16px 20px', borderRadius: '16px',
             transition: 'all 0.2s ease',
@@ -376,7 +376,7 @@ const Dashboard = () => {
             onClick={() => navigate('/customers', { state: { filter: 'overdue' } })}
             style={{ 
             display: 'flex', alignItems: 'center', gap: '16px', 
-            background: '#ffffff', 
+            background: 'var(--bg-card)', 
             border: '1px solid rgba(0,0,0,0.08)',
             padding: '16px 20px', borderRadius: '16px',
             transition: 'all 0.2s ease',

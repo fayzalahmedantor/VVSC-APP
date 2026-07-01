@@ -50,7 +50,7 @@
 .table th, .table td {
   padding: 16px 20px;
   text-align: left;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .table th {
@@ -136,7 +136,7 @@
 
 .modalHeader {
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -169,7 +169,7 @@
 .formGroup input,
 .formGroup select {
   padding: 12px 16px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-main);
   color: var(--text-main);
@@ -187,7 +187,7 @@
 
 .modalActions {
   padding: 20px 24px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
   gap: 12px;

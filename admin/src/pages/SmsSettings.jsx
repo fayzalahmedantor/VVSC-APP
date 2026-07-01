@@ -196,7 +196,7 @@ const SmsSettings = () => {
                 }}>
                   <div style={{
                     position: 'absolute', top: '2px', left: smsSettings.isSmsEnabled ? '22px' : '2px',
-                    width: '20px', height: '20px', background: 'white', borderRadius: '50%',
+                    width: '20px', height: '20px', background: 'var(--bg-card)', borderRadius: '50%',
                     transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                   }} />
                 </div>
@@ -337,7 +337,7 @@ const SmsSettings = () => {
             {dueFollowUps.length > 0 ? (
               <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
                 {dueFollowUps.map(c => (
-                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                     <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.name}</span>
                     <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{c.brand} {c.deviceType}</span>
                   </div>

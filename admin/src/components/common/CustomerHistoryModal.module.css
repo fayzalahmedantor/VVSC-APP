@@ -266,5 +266,76 @@
   }
   .editBtn {
     align-self: flex-end;
-  }
+}
+}
+
+/* Job Details Read-Only View */
+.jobDetailsView {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+
+.backBtn:hover {
+  color: var(--primary, #00D4AA);
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detailCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.detailCard h4 {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailItem {
+  margin-bottom: 12px;
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.detailVal {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.financials {
+  background: rgba(76, 175, 80, 0.05);
+  border: 1px solid rgba(76, 175, 80, 0.1);
 }

@@ -254,7 +254,7 @@ const Report = () => {
         <div className={styles.filters}>
           <select 
             className="btn" 
-            style={{ background: 'var(--bg-card)', border: '1px solid rgba(0,0,0,0.1)' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border-light)' }}
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >

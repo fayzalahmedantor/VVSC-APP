@@ -33,7 +33,7 @@ function ReloadPrompt() {
       padding: '20px',
       borderRadius: '16px',
       boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-      border: '1px solid rgba(0,0,0,0.05)',
+      border: '1px solid var(--border-color)',
       zIndex: 9999,
       display: 'flex',
       flexDirection: 'column',

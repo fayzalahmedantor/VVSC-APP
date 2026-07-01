@@ -147,7 +147,7 @@
 
 .iconBtn {
   background: var(--bg-main);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.3s ease;
@@ -209,7 +209,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 16px;
 }
 
@@ -246,7 +246,7 @@
 .formGroup select,
 .formGroup textarea {
   padding: 14px 16px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   background: var(--bg-main);
   color: var(--text-main);
@@ -314,7 +314,7 @@
   gap: 16px;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid var(--border-color);
 }
 
 /* Pagination Styles */
@@ -323,7 +323,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid var(--border-color);
   margin-top: 16px;
 }
 
@@ -334,7 +334,7 @@
 
 .pageBtn {
   background: var(--bg-main);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
@@ -387,7 +387,7 @@
   display: flex;
   align-items: center;
   background: var(--bg-main);
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;

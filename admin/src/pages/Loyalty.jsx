@@ -150,7 +150,7 @@ const Loyalty = () => {
                         <button 
                           className="btn" 
                           onClick={() => handleOpenModal(c)}
-                          style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid rgba(0,0,0,0.1)' }}
+                          style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid var(--border-light)' }}
                         >
                           <Clock size={14} style={{ display: 'inline', marginBottom: '-2px' }} /> History
                         </button>
@@ -187,7 +187,7 @@ const Loyalty = () => {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {history.map((h, i) => (
-                    <div key={i} style={{ padding: '12px', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', background: '#fff' }}>
+                    <div key={i} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-card)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <span style={{ fontWeight: 600, color: h.type === 'redeem' ? '#EF4444' : '#10B981' }}>
                           {h.type === 'redeem' ? '-' : '+'}{h.points} Points

@@ -112,7 +112,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           <ChevronDown size={16} style={{ marginLeft: 'auto', color: 'var(--text-sidebar)', transform: showUserMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
           
           {showUserMenu && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: 'var(--bg-card)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 50 }}>
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 50 }}>
               <button 
                 onClick={async (e) => {
                   e.stopPropagation();

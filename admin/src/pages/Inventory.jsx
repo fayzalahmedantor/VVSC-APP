@@ -769,7 +769,7 @@ const Inventory = () => {
                       value={sellMechanic} 
                       onChange={(e) => setSellMechanic(e.target.value)} 
                       required
-                      style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', background: 'var(--bg-main)', width: '100%', fontSize: '14px', fontFamily: 'var(--font-family)' }}
+                      style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', outline: 'none', background: 'var(--bg-main)', width: '100%', fontSize: '14px', fontFamily: 'var(--font-family)' }}
                     >
                       <option value="">-- Choose Mechanic --</option>
                       {mechanicsList.map(m => (

@@ -12,12 +12,23 @@ const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Disabled automatic dark mode based on system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDark(true);
+      document.body.classList.add('dark-mode');
+    }
   }, []);
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.body.classList.toggle('dark-mode');
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    if (newIsDark) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   return (

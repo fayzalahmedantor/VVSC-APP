@@ -104,7 +104,7 @@ const StatusDropdown = ({ value, onChange }) => {
             background: 'var(--bg-card)',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-            border: '1px solid rgba(0,0,0,0.05)',
+            border: '1px solid var(--border-color)',
             padding: '4px',
             zIndex: 99999, // Ensure it floats above everything
             display: 'flex',

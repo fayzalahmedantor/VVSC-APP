@@ -687,7 +687,7 @@ const Customers = () => {
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
                     className="btn" 
-                    style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid rgba(0,0,0,0.1)' }}
+                    style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid var(--border-light)' }}
                     disabled={currentPage === 1} 
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   >
@@ -712,7 +712,7 @@ const Customers = () => {
 
                   <button 
                     className="btn" 
-                    style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid rgba(0,0,0,0.1)' }}
+                    style={{ padding: '6px 12px', background: 'var(--bg-main)', border: '1px solid var(--border-light)' }}
                     disabled={currentPage === totalPages} 
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   >
@@ -750,7 +750,7 @@ const Customers = () => {
                   settingsTab === 'deviceType' ? 'Add new type...' : 
                   settingsTab === 'issue' ? 'Add new problem...' : 'Add new mechanic...'
                 } 
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }} 
+                style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }} 
               />
               <button className="btn btn-primary" onClick={handleAddOption}>Add</button>
             </div>
@@ -789,7 +789,7 @@ const Customers = () => {
                 <span style={{ color: 'var(--text-muted)' }}>Previously Paid:</span>
                 <span style={{ fontWeight: 600, color: 'var(--success)' }}>৳{deliveryCustomer.advance || 0}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontWeight: 600 }}>Current Due:</span>
                 <span style={{ fontWeight: 700, color: 'var(--danger)' }}>৳{deliveryCustomer.dueBalance || 0}</span>
               </div>
@@ -807,7 +807,7 @@ const Customers = () => {
               />
             </div>
             
-            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <div style={{ marginTop: '20px', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ marginBottom: '12px', fontSize: '14px', color: 'var(--text-muted)' }}>Parts Used (Inventory)</h4>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -816,7 +816,7 @@ const Customers = () => {
                     <select 
                       value={part.partId} 
                       onChange={(e) => handlePartChange(index, 'partId', e.target.value)}
-                      style={{ flex: '1 1 180px', minWidth: '150px', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}
+                      style={{ flex: '1 1 180px', minWidth: '150px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-light)' }}
                     >
                       <option value="" disabled hidden>Select Part...</option>
                       {inventoryItems.map(item => (
@@ -829,7 +829,7 @@ const Customers = () => {
                       min="1"
                       value={part.qty} 
                       onChange={(e) => handlePartChange(index, 'qty', e.target.value)}
-                      style={{ width: '80px', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)' }}
+                      style={{ width: '80px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-light)' }}
                     />
                     {deliveryParts.length > 1 && (
                       <button type="button" className={styles.iconBtn} onClick={() => handleRemoveDeliveryPart(index)} style={{ padding: '8px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 75, 75, 0.1)' }}>

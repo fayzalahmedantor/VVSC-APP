@@ -248,8 +248,8 @@ const Settings = () => {
 
             <div className={styles.formGroup}>
               <label>Contact Phone</label>
-              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
-                <span style={{ padding: '0 12px', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', borderRight: '1px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
+              <div style={{ display: 'flex', alignItems: 'stretch', border: '1px solid var(--border-light)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-main)' }}>
+                <span style={{ padding: '0 12px', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', borderRight: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>+88</span>
                 <input required type="tel" name="phone" value={profile.phone} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 11) handleChange({ target: { name: 'phone', value: val } }); }} placeholder="01XXXXXXXXX" style={{ border: 'none', margin: 0, width: '100%', padding: '12px', outline: 'none', background: 'transparent', color: 'var(--text-main)' }} />
               </div>
             </div>
@@ -274,7 +274,7 @@ const Settings = () => {
             <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Theme & Appearance</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>Customize how the system looks and feels.</p>
 
-            <div className={styles.formGroup} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-main)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <div className={styles.formGroup} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-main)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <div>
                 <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--text-main)', fontSize: '16px' }}>Dark Mode</strong>
                 <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Switch the entire system interface to a darker theme.</span>
@@ -283,7 +283,7 @@ const Settings = () => {
                 type="button"
                 onClick={toggleTheme} 
                 style={{
-                  background: isDark ? 'var(--primary-color)' : '#cbd5e1',
+                  background: isDark ? 'var(--primary)' : '#cbd5e1',
                   border: 'none',
                   borderRadius: '30px',
                   width: '60px',
@@ -299,7 +299,7 @@ const Settings = () => {
                   left: isDark ? '32px' : '4px',
                   width: '24px',
                   height: '24px',
-                  background: '#fff',
+                  background: 'var(--bg-card)',
                   borderRadius: '50%',
                   transition: 'left 0.3s',
                   boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
@@ -337,7 +337,7 @@ const Settings = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               
               {/* Earn Rule */}
-              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Points Earning Rule</h4>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
@@ -370,7 +370,7 @@ const Settings = () => {
               </div>
 
               {/* Redeem Rule */}
-              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-main)' }}>Points Redemption Rule</h4>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <div className={styles.formGroup} style={{ flex: 1, marginBottom: 0 }}>
@@ -446,7 +446,7 @@ const Settings = () => {
               </div>
             </div>
 
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px', background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', textAlign: 'left' }}>
+            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px', background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'left' }}>
               <input 
                 type="checkbox" 
                 id="loyaltyEnableSelfRedeem" 
@@ -482,7 +482,7 @@ const Settings = () => {
             
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Create separate accounts for your employees. They will only have access to Customer & Inventory pages, keeping settings and reports hidden.</p>
             
-            <form onSubmit={handleAddStaff} style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <form onSubmit={handleAddStaff} style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ marginTop: 0, marginBottom: '16px' }}>Create New Account</h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                 <div className={styles.formGroup} style={{ marginBottom: 0 }}>
@@ -511,7 +511,7 @@ const Settings = () => {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                 {employees.map(emp => (
-                  <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                     <div>
                       <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>
                         {emp.name} {emp.accessBlocked && <span style={{fontSize: '11px', background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>BLOCKED</span>}
@@ -573,7 +573,7 @@ const Settings = () => {
                   onChange={e => setOldPassword(e.target.value)} 
                   placeholder="Enter current password" 
                   required
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
                 />
               </div>
             )}
@@ -585,7 +585,7 @@ const Settings = () => {
                 value={newLoanPassword} 
                 onChange={e => setNewLoanPassword(e.target.value)} 
                 placeholder="Enter new password (leave empty to disable)" 
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
               />
             </div>
 
@@ -596,7 +596,7 @@ const Settings = () => {
                 value={confirmPassword} 
                 onChange={e => setConfirmPassword(e.target.value)} 
                 placeholder="Re-enter new password" 
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
               />
             </div>
             
@@ -665,7 +665,7 @@ const Settings = () => {
                         name="startTime"
                         value={accessModal.employee.startTime || ''}
                         onChange={handleAccessChange}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
                       />
                     </div>
                     <div className={styles.formGroup} style={{ marginBottom: 0 }}>
@@ -675,7 +675,7 @@ const Settings = () => {
                         name="endTime"
                         value={accessModal.employee.endTime || ''}
                         onChange={handleAccessChange}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'var(--bg-main)' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-main)' }}
                       />
                     </div>
                   </div>
