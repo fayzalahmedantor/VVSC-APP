@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, doc, setDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db, firebaseConfig } from './firebase';
 
 // We initialize a secondary app instance just for creating users so the primary admin doesn't get logged out
@@ -11,11 +11,12 @@ const secondaryAuth = getAuth(secondaryApp);
 
 export const getEmployees = async () => {
   try {
-    const q = query(collection(db, 'users'), where('role', '==', 'employee'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db, 'users'));
     return snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(emp => emp.isActive !== false);
+      // We don't filter out inactive here, because we want to see them in the Settings to approve/delete
+      // But we can filter out the super admin if we want, or keep them. Let's just return all
+      .filter(emp => emp.email !== 'fayzalahmedantor@gmail.com');
   } catch (error) {
     console.error("Error fetching employees:", error);
     return [];
@@ -60,6 +61,30 @@ export const deleteEmployeeAccount = async (employeeId) => {
     return true;
   } catch (error) {
     console.error("Error deleting employee:", error);
+    throw error;
+  }
+};
+
+export const deleteUserCompletely = async (userId) => {
+  try {
+    // Hard delete from Firestore (they still exist in Auth, but won't be able to log in)
+    await deleteDoc(doc(db, 'users', userId));
+    return true;
+  } catch (error) {
+    console.error("Error completely deleting user:", error);
+    throw error;
+  }
+};
+
+export const updateUserRoleAndStatus = async (userId, newRole, isActive) => {
+  try {
+    await updateDoc(doc(db, 'users', userId), {
+      role: newRole,
+      isActive: isActive
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating user role:", error);
     throw error;
   }
 };

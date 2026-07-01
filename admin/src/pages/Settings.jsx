@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getShopProfile, updateShopProfile, getLoanPassword, updateLoanPassword } from '../services/settingsService';
-import { getEmployees, createEmployee, deleteEmployeeAccount, updateEmployeeAccess } from '../services/employeeAuthService';
+import { getEmployees, createEmployee, deleteEmployeeAccount, updateEmployeeAccess, updateUserRoleAndStatus, deleteUserCompletely } from '../services/employeeAuthService';
 import { UserPlus, Trash2, Save, Store, Palette, FileText, Users, Star, Lock, Settings as SettingsIcon, X } from 'lucide-react';
 import ConfirmModal from '../components/common/ConfirmModal';
 import styles from './Settings.module.css';
@@ -167,6 +167,50 @@ const Settings = () => {
       alert("Failed to delete account.");
     }
   };
+
+  const handleApproveUser = async (id) => {
+    setSaving(true);
+    try {
+      await updateUserRoleAndStatus(id, 'employee', true);
+      setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: 'employee', isActive: true } : emp));
+      alert("User approved successfully!");
+    } catch (err) {
+      alert("Failed to approve user.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteUserCompletely = async (id) => {
+    if (window.confirm("Are you sure you want to completely remove this request?")) {
+      setSaving(true);
+      try {
+        await deleteUserCompletely(id);
+        setEmployees(prev => prev.filter(emp => emp.id !== id));
+      } catch (err) {
+        alert("Failed to delete user request.");
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  const handleRoleChange = async (id, newRole) => {
+    if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+      setSaving(true);
+      try {
+        await updateUserRoleAndStatus(id, newRole, true);
+        setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, role: newRole } : emp));
+      } catch (err) {
+        alert("Failed to change user role.");
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  const activeStaff = employees.filter(emp => emp.role !== 'pending');
+  const pendingStaff = employees.filter(emp => emp.role === 'pending');
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -503,24 +547,35 @@ const Settings = () => {
               </button>
             </form>
 
-            <h4 style={{ marginBottom: '16px' }}>Active Staff</h4>
-            {employees.length === 0 ? (
+            <h4 style={{ marginBottom: '16px' }}>Active Users</h4>
+            {activeStaff.length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-main)', borderRadius: '12px', border: '1px dashed rgba(0,0,0,0.1)' }}>
-                No staff accounts created yet.
+                No active staff accounts created yet.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-                {employees.map(emp => (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '32px' }}>
+                {activeStaff.map(emp => (
                   <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                     <div>
-                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>
-                        {emp.name} {emp.accessBlocked && <span style={{fontSize: '11px', background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>BLOCKED</span>}
+                      <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {emp.name} 
+                        {emp.accessBlocked && <span style={{fontSize: '11px', background: 'var(--danger)', color: 'white', padding: '2px 6px', borderRadius: '4px'}}>BLOCKED</span>}
+                        {emp.role === 'admin' && <span style={{fontSize: '11px', background: 'var(--primary)', color: 'white', padding: '2px 6px', borderRadius: '4px'}}>ADMIN</span>}
                       </div>
                       <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
                         {emp.email} • {emp.startTime && emp.endTime ? `Shift: ${emp.startTime} to ${emp.endTime}` : 'No shift schedule'}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <select
+                        value={emp.role}
+                        onChange={(e) => handleRoleChange(emp.id, e.target.value)}
+                        style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '13px', cursor: 'pointer' }}
+                        disabled={saving}
+                      >
+                        <option value="employee">Staff</option>
+                        <option value="admin">Admin</option>
+                      </select>
                       <button onClick={() => handleEditAccess(emp)} className={styles.iconBtn} style={{ color: 'var(--primary)', background: 'rgba(74, 0, 224, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Edit Access & Shift">
                         <SettingsIcon size={18} />
                       </button>
@@ -530,6 +585,34 @@ const Settings = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {pendingStaff.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h4 style={{ marginBottom: '16px', color: '#ff9800' }}>Pending Approvals ({pendingStaff.length})</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                  {pendingStaff.map(emp => (
+                    <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-main)', borderRadius: '12px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+                      <div>
+                        <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '15px' }}>
+                          {emp.name}
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          {emp.email} • Waiting for approval
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleApproveUser(emp.id)} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '13px', background: '#4caf50', border: 'none' }} disabled={saving}>
+                          Approve as Staff
+                        </button>
+                        <button onClick={() => handleDeleteUserCompletely(emp.id)} className={styles.iconBtn} style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} title="Reject & Delete" disabled={saving}>
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -2,9 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 
 const AuthContext = createContext();
@@ -19,6 +21,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const loginWithGoogle = () => {
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
   };
 
   const logout = () => {
@@ -37,8 +44,18 @@ export const AuthProvider = ({ children }) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             
+            if (data.role === 'pending') {
+              await signOut(auth);
+              alert("Your account is still waiting for Admin approval.");
+              setUserRole(null);
+              setCurrentUser(null);
+              setLoading(false);
+              return;
+            }
+
             if (data.isActive === false || data.role === 'disabled') {
               await signOut(auth);
+              alert("Your account has been disabled.");
               setUserRole(null);
               setCurrentUser(null);
               setLoading(false);
@@ -89,10 +106,32 @@ export const AuthProvider = ({ children }) => {
             setCurrentUser(user);
             setLoading(false);
           } else {
-            setUserRole('admin');
-            setUserName('Admin User');
-            setCurrentUser(user);
-            setLoading(false);
+            if (user.email === 'fayzalahmedantor@gmail.com') {
+              setUserRole('admin');
+              setUserName('Admin User');
+              setCurrentUser(user);
+              setLoading(false);
+            } else {
+              try {
+                await setDoc(doc(db, 'users', user.uid), {
+                  name: user.displayName || user.email?.split('@')[0] || 'Unknown',
+                  email: user.email,
+                  role: 'pending',
+                  isActive: false,
+                  accessBlocked: false,
+                  createdAt: new Date().toISOString()
+                });
+                await signOut(auth);
+                alert("Account created! Waiting for Admin approval.");
+              } catch (err) {
+                console.error("Error creating pending user:", err);
+                await signOut(auth);
+                alert("Access Denied: You do not have permission to access this system.");
+              }
+              setUserRole(null);
+              setCurrentUser(null);
+              setLoading(false);
+            }
           }
         }, (error) => {
           console.error("Auth snapshot error:", error);
@@ -119,6 +158,7 @@ export const AuthProvider = ({ children }) => {
     userRole,
     userName,
     login,
+    loginWithGoogle,
     logout
   };
 
