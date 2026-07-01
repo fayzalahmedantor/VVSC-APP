@@ -458,10 +458,42 @@ const Customers = () => {
     );
   });
 
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const groupedCustomers = useMemo(() => {
+    const groups = {};
+    filteredCustomers.forEach(c => {
+      if (!groups[c.phone]) {
+        groups[c.phone] = {
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          totalBill: 0,
+          dueBalance: 0,
+          jobs: [],
+          latestJob: c,
+          latestDate: c.createdAt ? new Date(c.createdAt).getTime() : 0
+        };
+      }
+      
+      const group = groups[c.phone];
+      group.totalBill += Number(c.totalBill || 0);
+      group.dueBalance += Number(c.dueBalance || 0);
+      group.jobs.push(c);
+      
+      const cDate = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+      if (cDate > group.latestDate) {
+        group.latestDate = cDate;
+        group.latestJob = c;
+        group.name = c.name;
+        group.id = c.id;
+      }
+    });
+    return Object.values(groups).sort((a, b) => b.latestDate - a.latestDate);
+  }, [filteredCustomers]);
+
+  const totalPages = Math.ceil(groupedCustomers.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(indexOfFirstItem, indexOfLastItem);
+  const currentCustomers = groupedCustomers.slice(indexOfFirstItem, indexOfLastItem);
 
   const getInitials = (name) => name ? name.charAt(0).toUpperCase() : '?';
 
@@ -572,25 +604,30 @@ const Customers = () => {
                 {currentCustomers.length === 0 ? (
                   <tr><td colSpan="6" style={{textAlign: 'center', padding: '40px'}}>No records found.</td></tr>
                 ) : (
-                  currentCustomers.map(customer => (
-                    <tr key={customer.id}>
+                  currentCustomers.map(group => {
+                    const customer = group.latestJob;
+                    return (
+                    <tr key={group.phone}>
                       <td>
                         <div className={styles.customerInfo} onClick={() => setHistoryCustomer(customer)} style={{ cursor: 'pointer' }} title="Click to view full profile and history">
-                          <div className={styles.avatar}>{getInitials(customer.name)}</div>
+                          <div className={styles.avatar}>{getInitials(group.name)}</div>
                           <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '15px', color: 'var(--text-main)', marginBottom: '2px' }}>{customer.name}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '15px', color: 'var(--text-main)', marginBottom: '2px' }}>{group.name}</div>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                              Bill: <span style={{color: 'var(--text-main)', fontWeight: 600}}>৳{customer.totalBill || 0}</span>
-                              {Number(customer.dueBalance) > 0 && (
-                                <> <span style={{color: '#ddd', margin: '0 4px'}}>|</span> Due: <span style={{color: 'var(--danger)', fontWeight: 600}}>৳{customer.dueBalance}</span></>
+                              Bill: <span style={{color: 'var(--text-main)', fontWeight: 600}}>৳{group.totalBill}</span>
+                              {Number(group.dueBalance) > 0 && (
+                                <> <span style={{color: '#ddd', margin: '0 4px'}}>|</span> Due: <span style={{color: 'var(--danger)', fontWeight: 600}}>৳{group.dueBalance}</span></>
                               )}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--primary)', marginTop: '4px', fontWeight: 600, background: 'rgba(74, 0, 224, 0.1)', display: 'inline-block', padding: '2px 8px', borderRadius: '10px' }}>
+                              Total Jobs: {group.jobs.length}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className={styles.phoneCell}>
                         <a 
-                          href={getWhatsAppLink(customer.phone, replaceVariables(smsSettings?.msgWhatsApp || defaultSmsSettings.msgWhatsApp, customer, shopProfile?.shopName))} 
+                          href={getWhatsAppLink(group.phone, replaceVariables(smsSettings?.msgWhatsApp || defaultSmsSettings.msgWhatsApp, customer, shopProfile?.shopName))} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{ 
@@ -601,7 +638,7 @@ const Customers = () => {
                           }}
                           title="Click to send WhatsApp message"
                         >
-                          {customer.phone}
+                          {group.phone}
                         </a>
                       </td>
                       <td>
@@ -623,21 +660,21 @@ const Customers = () => {
                       </td>
                       <td>
                         <div className={styles.actionBtns}>
-                          <button className={styles.iconBtn} onClick={() => setCustomerToPrint(customer)} title="Print Invoice">
+                          <button className={styles.iconBtn} onClick={() => setCustomerToPrint(customer)} title="Print Invoice (Latest Job)">
                             <Printer size={18} />
                           </button>
-                          <button className={styles.iconBtn} onClick={() => setCustomerToLabel(customer)} title="Print Label">
+                          <button className={styles.iconBtn} onClick={() => setCustomerToLabel(customer)} title="Print Label (Latest Job)">
                             <Tag size={18} />
                           </button>
                           {userRole === 'admin' && (
-                            <button className={`${styles.iconBtn} ${styles.delete}`} onClick={() => handleDelete(customer.id)}>
+                            <button className={`${styles.iconBtn} ${styles.delete}`} onClick={() => handleDelete(customer.id)} title="Delete Latest Job">
                               <Trash2 size={18} />
                             </button>
                           )}
                         </div>
                       </td>
                     </tr>
-                  ))
+                  )})
                 )}
               </tbody>
             </table>
@@ -645,7 +682,7 @@ const Customers = () => {
             {totalPages > 1 && (
               <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                 <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredCustomers.length)} of {filteredCustomers.length} entries
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, groupedCustomers.length)} of {groupedCustomers.length} unique customers
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 

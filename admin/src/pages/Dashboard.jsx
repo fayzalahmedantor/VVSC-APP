@@ -159,6 +159,40 @@ const Dashboard = () => {
     }
   };
 
+  const groupedDashboardCustomers = React.useMemo(() => {
+    const groups = {};
+    if (!stats.customersList) return [];
+    
+    stats.customersList.forEach(c => {
+      if (c.mechanic && c.mechanic.trim() !== '') return;
+      
+      if (!groups[c.phone]) {
+        groups[c.phone] = {
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          totalBill: 0,
+          loyaltyPoints: 0,
+          latestJob: c,
+          latestDate: c.createdAt ? new Date(c.createdAt).getTime() : 0
+        };
+      }
+      
+      const group = groups[c.phone];
+      group.totalBill += Number(c.totalBill || 0);
+      group.loyaltyPoints = Math.max(group.loyaltyPoints, Number(c.loyaltyPoints || 0));
+      
+      const cDate = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+      if (cDate > group.latestDate) {
+        group.latestDate = cDate;
+        group.latestJob = c;
+        group.name = c.name;
+        group.id = c.id;
+      }
+    });
+    return Object.values(groups).sort((a, b) => b.latestDate - a.latestDate);
+  }, [stats.customersList]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 'calc(100vh - 120px)' }}>
       <div className={styles.dashboardGrid}>
@@ -195,9 +229,9 @@ const Dashboard = () => {
         <div className={`${styles.card} ${styles.summaryCard} ${styles.teal}`} style={{ gridColumn: 'span 2' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
             <div className={styles.iconWrapper}><Users /></div>
-            <div className={styles.summaryValue}>{stats.loading ? '...' : stats.totalCustomers}</div>
+            <div className={styles.summaryValue}>{stats.loading ? '...' : groupedDashboardCustomers.length}</div>
           </div>
-          <div className={styles.summaryLabel}>Total Customers</div>
+          <div className={styles.summaryLabel}>Unique Customers</div>
         </div>
 
         {/* Metric Card */}
@@ -222,7 +256,7 @@ const Dashboard = () => {
       {/* Row 2: Customer List, Alerts, Chart */}
       <div className={styles.card} style={{ gridColumn: 'span 6' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3>Customer List</h3>
+          <h3>Recent Customers</h3>
           <button className="btn btn-primary" onClick={() => navigate('/customers')} style={{ padding: '8px 16px', fontSize: '12px' }}>View All</button>
         </div>
         <div className={styles.tableContainer}>
@@ -232,15 +266,16 @@ const Dashboard = () => {
                 <th>Customer Name</th>
                 <th>Number</th>
                 <th>Total Bill</th>
-                <th>Status</th>
+                <th>Status (Latest Job)</th>
                 <th>Points</th>
               </tr>
             </thead>
             <tbody>
               {stats.loading ? (
                 <tr><td colSpan="5" style={{textAlign: 'center', padding: '16px'}}>Loading...</td></tr>
-              ) : stats.customersList && stats.customersList.length > 0 ? (
-                stats.customersList.slice(0, 4).map(customer => {
+              ) : groupedDashboardCustomers && groupedDashboardCustomers.length > 0 ? (
+                groupedDashboardCustomers.slice(0, 4).map(group => {
+                  const customer = group.latestJob;
                   let statusBg = '#fff8e1';
                   let statusText = '#f57c00';
                   if (customer.status === 'Running') { statusBg = '#e3f2fd'; statusText = '#1976d2'; }
@@ -248,16 +283,16 @@ const Dashboard = () => {
                   else if (customer.status === 'Cancel') { statusBg = '#ffebee'; statusText = '#d32f2f'; }
                   
                   return (
-                    <tr key={customer.id}>
+                    <tr key={group.phone}>
                       <td 
                         style={{ fontWeight: 600, cursor: 'pointer', color: 'var(--primary)' }}
                         onClick={() => setHistoryCustomer(customer)}
-                        title="Click to view details"
+                        title="Click to view full profile and history"
                       >
-                        {customer.name}
+                        {group.name}
                       </td>
-                      <td>{customer.phone}</td>
-                      <td style={{ fontWeight: 600 }}>৳{customer.totalBill || 0}</td>
+                      <td>{group.phone}</td>
+                      <td style={{ fontWeight: 600 }}>৳{group.totalBill || 0}</td>
                       <td>
                         <StatusDropdown 
                           value={customer.status} 
@@ -267,7 +302,7 @@ const Dashboard = () => {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--warning)' }}>
                           <Star size={14} fill="currentColor" />
-                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{customer.loyaltyPoints || 0}</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{group.loyaltyPoints || 0}</span>
                         </div>
                       </td>
                     </tr>
